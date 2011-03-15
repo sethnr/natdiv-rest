@@ -1,7 +1,17 @@
 class PhenotypeController < ApplicationController
 
   def index
-    redirect_to :action => :list
+#    redirect_to :action => :list
+     @phenotypes = Phenotype.all
+ 
+     respond_to do |format|
+       format.html # index.html.erb
+       format.xml  { render :xml => @phenotypes }
+       format.json { render :json => @phenotypes }
+     end
+
+
+
   end
 
   def list
