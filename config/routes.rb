@@ -1,8 +1,19 @@
 ActionController::Routing::Routes.draw do |map|
   # The priority is based upon order of creation: first created -> highest priority.
 
-  map.resources :phenotype do |phenotype|
-    phenotype.resources :cvterms
+  map.resources :phenotype do |phenotypes|
+    phenotypes.resources :cvterms
+  end
+
+  map.resources :nd_experiment do |ndexperiments|
+    # experiment.resources :cvterms
+  end
+
+  map.resources :cvterm do |cvterm|
+  end
+
+  map.resources :project do |project|
+    # experiment.resources :cvterms
   end
 
   # Sample of regular route:

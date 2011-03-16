@@ -54,5 +54,12 @@ class PhenotypeController < ApplicationController
 
   def show
     @phenotype = Phenotype.find(params[:id])
+
+    respond_to do |format|
+      format.html # index.html.erb
+      format.xml  { render :xml => @phenotype }
+      format.json { render :json => @phenotype }
+    end
+
   end
 end

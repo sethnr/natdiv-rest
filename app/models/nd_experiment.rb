@@ -12,4 +12,16 @@ class NdExperiment < ActiveRecord::Base
   has_many :nd_experiment_stocks
 
   validates_presence_of(:nd_geolocation_id, :type_id)
+
+  def as_json(options = {})
+    { 
+      :id => nd_experiment_id,
+      :type => type_id,
+      :genotypes => genotypes,
+      :phenotypes => phenotypes,
+      :stocks => stocks
+    }
+  end
+
+
 end
