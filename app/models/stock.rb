@@ -18,4 +18,12 @@ class Stock < ActiveRecord::Base
   has_many :nd_experiments, :through => :nd_experiment_stocks
 
   validates_presence_of( :uniquename, :type_id)
+
+  def as_json
+    {
+      :name => name,
+      :uniquename => uniquename
+    }
+  end
+  
 end
