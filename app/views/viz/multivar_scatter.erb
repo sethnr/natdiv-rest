@@ -1,12 +1,19 @@
-<%= render(:partial => '/phenotype/p', :collection => @traits) -%>
+<% content_for :head do %>
+  <%= stylesheet_link_tag "plot_bubble" -%>
+  
 
-<%= render(:partial => '/cvterm/select', :locals => {:field_name => "FOO"}) -%>
+<% end %>
 
 <div id="center">
+  
+  <div id="text">
+       !! <%= @associations.to_s %>;
+  </div>
+
   <div id="fig">
 
   <script type="text/javascript+protovis">
-    <%= render_multivar_vars(@data) -%>
+    <! %= render_multivar_vars(@data) -%>
     var species = ["setosa", "versicolor", "virginica"];
     var traits = ["sepalLength", "sepalWidth", "petalLength", "petalWidth"];
     var flowers = [
@@ -162,7 +169,7 @@
       {sepalLength: 5.9, sepalWidth: 3.0, petalLength: 5.1, petalWidth: 1.8, species: "virginica"}
     ];
 
-      <%= render(:partial => '/viz/plots/multivar_scatter') -%> 
+      <! %= render(:partial => '/viz/plots/multivar_scatter') -%> 
 
     </script>
   </div

@@ -12,12 +12,36 @@ class VizController < ApplicationController
     render :action => 'plots/plot_bubble'
   end
 
-  def plot_multivar
-    pieces = params[:id].split(":")
-    @term = Cvterm.with_obo_id(pieces[0], pieces[1]).first
-    @associations = ActiveSupport::JSON.encode(experiment_associations_data(@term))
+  def plot_tree
+   pieces = params[:id].split(":")
+   @term = Cvterm.with_obo_id(pieces[0], pieces[1]).first
+   @associations = ActiveSupport::JSON.encode(experiment_associations_data(@term))
+    render :action => 'plots/plot_dendrogram'
+  end
 
-#    render :action => 'plots/plot_bubble'
+  def multivar_scatter
+#    pieces = params[:id].split(":")
+#    @term = Cvterm.with_obo_id(pieces[0], pieces[1]).first
+#    @associations = ActiveSupport::JSON.encode(experiment_associations_data(@term))
+
+    pieces = params[:id].split(":")
+    @project = Project.find(pieces[0])
+    @associations = ActiveSupport::JSON.encode(@project)
+    render :action => 'plots/plot_scatter'
+  end 
+
+  def project_bubble
+    pieces = params[:id].split(":")
+    @project = Project.find(pieces[0])
+    @associations = ActiveSupport::JSON.encode(@project)
+    render :action => 'plots/plot_bubble'
+  end 
+
+  def project_tree
+    pieces = params[:id].split(":")
+    @project = Project.find(pieces[0])
+    @associations = ActiveSupport::JSON.encode(@project)
+    render :action => 'plots/plot_dendrogram'
   end 
 
   def form_test
