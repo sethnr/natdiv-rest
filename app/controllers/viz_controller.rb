@@ -19,7 +19,7 @@ class VizController < ApplicationController
     render :action => 'plots/plot_dendrogram'
   end
 
-  def multivar_scatter
+  def plot_scatter
 #    pieces = params[:id].split(":")
 #    @term = Cvterm.with_obo_id(pieces[0], pieces[1]).first
 #    @associations = ActiveSupport::JSON.encode(experiment_associations_data(@term))
