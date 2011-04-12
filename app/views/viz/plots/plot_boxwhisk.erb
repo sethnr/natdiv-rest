@@ -1,0 +1,23 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "plot_bubble" -%>
+<% end %>
+
+<div id="center">
+  
+  <div id="text">
+        <! %= @associations.to_s %>
+  </div>
+
+  <div id="fig">
+
+
+  <script type="text/javascript+protovis">
+    
+      var data = <%= @associations.to_s%>;
+
+
+
+
+    </script>
+  </div>
+</div>
