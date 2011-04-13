@@ -13,27 +13,28 @@
 
   <script type="text/javascript+protovis">
     
-      var data = <%= @associations.to_s%>;
+
+    var xselect = 'cvalue != undefined';
+    var yselect = 'value >= 0';
+      var data = '<%= @associations.to_s%>'.evalJSON();
 
 
+      //var data = dataJson.evalJSON();
+//      alert(data.experiments);
+//      data.experiments.each(function(d) {alert(nodeFromArray(d.phenotypes, "cvalue != undefined").cvalue.name + "!")});
 
-     /* For pretty number formatting. */
-//      var format = pv.Format.number();
 
-//data.experiments.each(function(s) {alert(s.phenotypes.length)});
+      dataMap = data.experiments.map(function(d) {return {x: nodeFromArray(d.phenotypes, xselect).cvalue.name, y: nodeFromArray(d.phenotypes, yselect).value}})
 
+      xcats = dataMap.map(function(d) {return d.x}).uniq();
+
+	alert(data.x);
       /* Sizing and scales. */
       var w = 500,
           h = 500,
-//    	  x = pv.Scale.linear(0, 99).range(0, w),
-//	  x = pv.Scale.ordinal(data.experiments, function(e) (e.phenotypes.each.cvalue)?e.phenotypes.each.cvalue:-1).splitBanded(0, w, 3/5)
-//  	  x = pv.Scale.ordinal(data.experiments).split(0,w)
-	  x = pv.Scale.ordinal(["decreased intensity","normal","increased intensity"]).split(0, w)
-//	  x = pv.Scale.ordinal(data.experiments, function(e) e.id).splitBanded(0, w, 3/5)
+	  x = pv.Scale.ordinal(xcats).split(0, w)
     	  y = pv.Scale.linear(0, 500).range(0, h).nice(),
-//    	  y = pv.Scale.log(0.1, 500).range(0, h).nice(),
 	  s = x.range().band / 2;
-//    	  c = pv.Scale.log(1, 100).range("orange", "brown");
 	  c = pv.Colors.category10();
 
  /* The root panel. */
@@ -57,7 +58,7 @@
 
 /* X-axis and ticks. 
     vis.add(pv.Rule)
-	.data(["decreased intensity","normal","increased intensity"])
+	.data(xcats)
 	.left(x)
 	.anchor("bottom").add(pv.Label)
 //    	
