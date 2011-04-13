@@ -65,18 +65,27 @@
 
 /* The dot plot! */
 //     points.add(pv.Dot)
-       vis.add(pv.Panel)
-       .data(data.experiments)
-       .add(pv.Dot)
-/*   change zeros to 0.1 for log scale */
-//    	.bottom(function(d) y((nodeFromArray(d.phenotypes, "value >= 0").value == 0)?0.1:nodeFromArray(d.phenotypes, "value >= 0").value) )
-    	.bottom(function(d) y(nodeFromArray(d.phenotypes, "value >= 0").value) )
+     panel = vis.add(pv.Panel)
+       .data(data.experiments.sort(function(d) {nodeFromArray(d.phenotypes, "value >= 0").value}))
+       ;
 
-//    	.bottom(function(d) y(d.phenotypes[0].value) )
-	.left(function(d) x(d.phenotypes[1].cvalue.name))
-//	.left(function(d) x(d.id))
-	.strokeStyle(function(d) c(d.phenotypes[1].cvalue.name))
-;
+//     var dots = new Array();
+     dots = panel.add(pv.Dot)
+/*   change zeros to 0.1 for log scale */
+//    	    .bottom(function(d) y((nodeFromArray(d.phenotypes, "value >= 0").value == 0)?0.1:nodeFromArray(d.phenotypes, "value >= 0").value) )
+    	    .bottom(function(d) y(nodeFromArray(d.phenotypes, "value >= 0").value) )
+	    .left(function(d) x(d.phenotypes[1].cvalue.name))
+	    .strokeStyle(function(d) c(d.phenotypes[1].cvalue.name))
+	;
+
+	alert(panel.children.length + " "+ panel.children[0].type);
+	alert(data.type +" "+ data.map);
+//     dots.sort(function(d) {d.bottom});
+/*     for(var i = 0; i <= dots.data.experiments.length; i++) {
+     	alert(dots.data.type);
+	pv.search(dots)
+     }
+*/
     vis.render();   
 
     </script>
