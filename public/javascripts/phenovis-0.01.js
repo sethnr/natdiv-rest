@@ -191,8 +191,8 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
   
   /* Y-axis and ticks. */
   vis.add(pv.Rule)
-    //    .data(y.ticks())
-    .data(yvals.uniq)
+    .data(y.ticks())
+    //.data(yvals.uniq)
     .bottom(y)
     .strokeStyle(function(d) {return d ? "#eee" : "#000"})
     .anchor("left").add(pv.Label)
