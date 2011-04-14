@@ -146,33 +146,30 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
   //  alert(xvals+"\n\n"+myXvals);  
   //  var yvals = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, yselect).value});
   //  alert(yvals+"\n\n"+myYvals);
-      
-  var x = pv.Scale.ordinal(xvals.uniq()).split(0, w),
-    y = pv.Scale.linear(0, yvals.max()).range(0, h).nice(),
-    z = pv.Colors.category10(),
+
+
+  var numreg=/(^\d+$)|(^\d+\.\d+$)/;
+  var x, y; //check scale type and return  
+  if(xvals.uniq().any(function(d) {return (!numreg.test(d))}))
+    x = pv.Scale.ordinal(xvals.uniq()).split(0, w);
+  else
+    x = pv.Scale.linear(0, xvals.max()).range(0, w).nice()
+    
+  if(yvals.uniq().any(function(d) {return (!numreg.test(d))}))
+    y = pv.Scale.ordinal(yvals.uniq()).split(0, h);
+  else
+    y = pv.Scale.linear(0, yvals.max()).range(0, h).nice();
+
+  var z = pv.Colors.category10(),
     s = x.range().band / 2;
   
   /* make data structure */
-  /*
-  dataMap = data.experiments.map(function(d) {
-      var xval = nodeFromArray(d.phenotypes, xselect).cvalue.name;
-      var yval = nodeFromArray(d.phenotypes, yselect).value;
-      return {x: xval, y: yval, xpos: x(xval), ypos: y(yval)}}).sortBy(function(d) {return Number(d.y)});
-  */
   var valHash = new Hash();
   valHash.set("X",xvals)
   valHash.set("Y",yvals)
   valHash.set("Z",zvals)
-    //  valHash.set("Z",zvals)
-
 
   dataMap = data.experiments.map(function(d,i) {
-      //var xval = nodeFromArray(d.phenotypes, xselect).cvalue.name;
-      //var yval = nodeFromArray(d.phenotypes, yselect).value;
-      //var newXval = this.get("X")[i];
-      //var newYval = this.get("Y")[i];
-      //      var zval = this.get("z")[i];
-      //alert(xval+" x "+yval+"\n"+newXval+" x "+newYval);
       var xval = this.get("X")[i];
       var yval = this.get("Y")[i];
       var zval = this.get("Z")[i];
@@ -194,7 +191,8 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
   
   /* Y-axis and ticks. */
   vis.add(pv.Rule)
-    .data(y.ticks())
+    //    .data(y.ticks())
+    .data(yvals.uniq)
     .bottom(y)
     .strokeStyle(function(d) {return d ? "#eee" : "#000"})
     .anchor("left").add(pv.Label)
@@ -203,6 +201,7 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
   
   /* X-axis and ticks. */
   vis.add(pv.Rule)
+    //    .data(x.ticks())
     .data(xvals.uniq())
     .strokeStyle(function(d) {return d ? "#eee" : "#000"})
     .left(x)
