@@ -9,15 +9,18 @@
   <script type="text/javascript+protovis">
     
 
-    var xselect = 'cvalue != undefined';
+/*    var xselect = 'cvalue != undefined';
     var xval = 'cvalue.name';
     var yselect = 'value >= 0';
     var yval = 'value';
+*/
+    var xstring = "phenotypes:cvalue!=undefined->cvalue.name";
+    var ystring = "phenotypes:value>=0->value";
     var w = 500;
     var h = 400;
 
       var data = '<%= @associations.to_s%>'.evalJSON();
-	    dotplot(data, w, h, xval, xselect, yval, yselect).render();
+	    dotplot(data, w, h, xstring, ystring).render();
     
 /*
     var data;

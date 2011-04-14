@@ -109,110 +109,113 @@ function jitter(data, space) {
 
 /* dot plot */
 
-function dotplot(data, w, h, xval, xselect, yval, yselect) {
+function dotplot(data, w, h, xstring, ystring) {
       /* Sizing and scales. */
   var data, w, h, xval, xselect, yval, yselect;
 
-  /*
-
-  function xval(newXVal) {
-    xval = newXVal;
-  }
-
-  function yval(newYVal) {
-    yval = newYVal;
-  }
-
-  function xselect(newXSelect) {
-    xselect = newXSelect;
-  }
-
-  function yval(newYSelect) {
-    yselect = newYSelect;
-  }
-  */
   
+    var xselect = 'cvalue != undefined';
+    var xval = 'cvalue.name';
+    var yselect = 'value >= 0';
+    var yval = 'value';
+
+ 
   function findVals (valString) {
     var objectPath = valString.split("->");
     catchString = "data.experiments";
     for (var i=0; i<objectPath.length;i++) {
       var gets = objectPath[i].split(':');
       var objectType = gets[0]; var predicate = gets[1];
-      //      alert(objectType+" -> "+predicate);
       if(predicate != undefined)
 	catchString = catchString.concat(".collect(function(d) {return nodeFromArray(d.",objectType,",\"",predicate,"\")})");
       else
 	catchString = catchString.concat(".collect(function(d) {return d.",objectType,"})");
-	//	catchString = catchString.concat(".pluck(",objectType,")");
     }
+    alert(valString+"\n"+catchString);
     var myVals = eval(catchString);
     return myVals;
   }
 
+  
+  var xvals = findVals(xstring);
+  var yvals = findVals(ystring);
+  
+  
+  //  var xvals = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, xselect).cvalue.name});
+  //  alert(xvals+"\n\n"+myXvals);  
+  //  var yvals = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, yselect).value});
+  //  alert(yvals+"\n\n"+myYvals);
+      
+  var x = pv.Scale.ordinal(xvals.uniq()).split(0, w),
+    y = pv.Scale.linear(0, yvals.max()).range(0, h).nice(),
+    s = x.range().band / 2,
+    c = pv.Colors.category10();
+  
+  /* make data structure */
+  /*
+  dataMap = data.experiments.map(function(d) {
+      var xval = nodeFromArray(d.phenotypes, xselect).cvalue.name;
+      var yval = nodeFromArray(d.phenotypes, yselect).value;
+      return {x: xval, y: yval, xpos: x(xval), ypos: y(yval)}}).sortBy(function(d) {return Number(d.y)});
+  */
+  var valHash = new Hash();
+  valHash.set("X",xvals)
+  valHash.set("Y",yvals)
+    //  valHash.set("Z",zvals)
 
-  var myXvals = findVals("phenotypes:cvalue!=undefined->cvalue.name");
-  var myYvals = findVals("phenotypes:value>=0->value");
 
-  //  var xvals2 = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes,"cvalue!=undefined")}).collect(function(d) {return d.cvalue.name});
+  dataMap = data.experiments.map(function(d,i) {
+      //var xval = nodeFromArray(d.phenotypes, xselect).cvalue.name;
+      //var yval = nodeFromArray(d.phenotypes, yselect).value;
+      //var newXval = this.get("X")[i];
+      //var newYval = this.get("Y")[i];
+      //      var zval = this.get("z")[i];
+      //alert(xval+" x "+yval+"\n"+newXval+" x "+newYval);
+      var xval = this.get("X")[i];
+      var yval = this.get("Y")[i];
+      return {x: xval, xpos: x(xval), 
+	      y: yval, ypos: y(yval)}},valHash);
+  dataMap.sortBy(function(d) {return Number(d.y)});
 
-
-      var xvals = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, xselect).cvalue.name});
-      //      var xvals2 = data.pluck(experiments).collect(function(d) {return nodeFromArray(d.phenotypes,cvalue!=undefined)}).pluck(cvalue.name);
-      alert(xvals+"\n\n"+myXvals);
-
-
-      var yvals = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, yselect).value});
-      alert(yvals+"\n\n"+myYvals);
-      
-      var x = pv.Scale.ordinal(xvals.uniq()).split(0, w),
-	y = pv.Scale.linear(0, yvals.max()).range(0, h).nice(),
-	s = x.range().band / 2,
-	c = pv.Colors.category10();
-
-      /* make data structure */
-      dataMap = data.experiments.map(function(d) {
-	  var xval = nodeFromArray(d.phenotypes, xselect).cvalue.name;
-	  var yval = nodeFromArray(d.phenotypes, yselect).value;
-	  return {x: xval, y: yval, xpos: x(xval), ypos: y(yval)}}).sortBy(function(d) {return Number(d.y)});
-      
-      /* The root panel. */
-      var vis = new pv.Panel()
-	.width(w)
-	.height(h)
-	.bottom(20)
-	.left(20)
-	.right(10)
-	.top(5);
-      
-      /* Y-axis and ticks. */
-      vis.add(pv.Rule)
-	.data(y.ticks())
-   	.bottom(y)
-	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
-  	.anchor("left").add(pv.Label)
-	.text(y.tickFormat)
-	;
-      
-      /* X-axis and ticks. */
-      vis.add(pv.Rule)
-	.data(xvals.uniq())
-	.left(x)
-	.anchor("bottom")
-	.add(pv.Label)  	
-	;
-      
-      
-      /* The dot plot! */
-      panel = vis.add(pv.Panel)
-	.data(jitter(dataMap, 10))
-	//	 .data(dataMap)
-	;
-      
-      dots = panel.add(pv.Dot)
-	.bottom(function(d) {return d.ypos})
-	.left(function(d) {return d.xpos})
-	.strokeStyle(function(d) {return c(d.x)})
-	;
-      
-      return vis;   
+  
+  /* The root panel. */
+  var vis = new pv.Panel()
+    .width(w)
+    .height(h)
+    .bottom(20)
+    .left(20)
+    .right(10)
+    .top(5);
+  
+  /* Y-axis and ticks. */
+  vis.add(pv.Rule)
+    .data(y.ticks())
+    .bottom(y)
+    .strokeStyle(function(d) {return d ? "#eee" : "#000"})
+    .anchor("left").add(pv.Label)
+    .text(y.tickFormat)
+    ;
+  
+  /* X-axis and ticks. */
+  vis.add(pv.Rule)
+    .data(xvals.uniq())
+    .left(x)
+    .anchor("bottom")
+    .add(pv.Label)  	
+    ;
+  
+  
+  /* The dot plot! */
+  panel = vis.add(pv.Panel)
+    .data(jitter(dataMap, 10))
+    //	 .data(dataMap)
+    ;
+  
+  dots = panel.add(pv.Dot)
+    .bottom(function(d) {return d.ypos})
+    .left(function(d) {return d.xpos})
+    .strokeStyle(function(d) {return c(d.x)})
+    ;
+  
+  return vis;   
 }
