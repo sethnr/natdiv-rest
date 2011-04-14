@@ -109,16 +109,16 @@ function jitter(data, space) {
 
 /* dot plot */
 
-function dotplot(data, w, h, xstring, ystring) {
+function dotplot(data, w, h, xstring, ystring, zstring) {
       /* Sizing and scales. */
-  var data, w, h, xval, xselect, yval, yselect;
 
-  
+  var data, w, h; 
+  /*  
     var xselect = 'cvalue != undefined';
     var xval = 'cvalue.name';
     var yselect = 'value >= 0';
     var yval = 'value';
-
+  */
  
   function findVals (valString) {
     var objectPath = valString.split("->");
@@ -131,7 +131,7 @@ function dotplot(data, w, h, xstring, ystring) {
       else
 	catchString = catchString.concat(".collect(function(d) {return d.",objectType,"})");
     }
-    alert(valString+"\n"+catchString);
+    //    alert(valString+"\n"+catchString);
     var myVals = eval(catchString);
     return myVals;
   }
@@ -139,6 +139,7 @@ function dotplot(data, w, h, xstring, ystring) {
   
   var xvals = findVals(xstring);
   var yvals = findVals(ystring);
+  var zvals = findVals(zstring);
   
   
   //  var xvals = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, xselect).cvalue.name});
@@ -148,8 +149,8 @@ function dotplot(data, w, h, xstring, ystring) {
       
   var x = pv.Scale.ordinal(xvals.uniq()).split(0, w),
     y = pv.Scale.linear(0, yvals.max()).range(0, h).nice(),
-    s = x.range().band / 2,
-    c = pv.Colors.category10();
+    z = pv.Colors.category10(),
+    s = x.range().band / 2;
   
   /* make data structure */
   /*
@@ -161,6 +162,7 @@ function dotplot(data, w, h, xstring, ystring) {
   var valHash = new Hash();
   valHash.set("X",xvals)
   valHash.set("Y",yvals)
+  valHash.set("Z",zvals)
     //  valHash.set("Z",zvals)
 
 
@@ -173,8 +175,11 @@ function dotplot(data, w, h, xstring, ystring) {
       //alert(xval+" x "+yval+"\n"+newXval+" x "+newYval);
       var xval = this.get("X")[i];
       var yval = this.get("Y")[i];
+      var zval = this.get("Z")[i];
       return {x: xval, xpos: x(xval), 
-	      y: yval, ypos: y(yval)}},valHash);
+	  y: yval, ypos: y(yval),
+	  z: zval, zpos: z(zval),
+	  }},valHash);
   dataMap.sortBy(function(d) {return Number(d.y)});
 
   
@@ -199,6 +204,7 @@ function dotplot(data, w, h, xstring, ystring) {
   /* X-axis and ticks. */
   vis.add(pv.Rule)
     .data(xvals.uniq())
+    .strokeStyle(function(d) {return d ? "#eee" : "#000"})
     .left(x)
     .anchor("bottom")
     .add(pv.Label)  	
@@ -214,7 +220,7 @@ function dotplot(data, w, h, xstring, ystring) {
   dots = panel.add(pv.Dot)
     .bottom(function(d) {return d.ypos})
     .left(function(d) {return d.xpos})
-    .strokeStyle(function(d) {return c(d.x)})
+    .strokeStyle(function(d) {return z(d.x)})
     ;
   
   return vis;   

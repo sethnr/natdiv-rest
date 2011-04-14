@@ -20,7 +20,7 @@
     var h = 400;
 
       var data = '<%= @associations.to_s%>'.evalJSON();
-	    dotplot(data, w, h, xstring, ystring).render();
+	    dotplot(data, w, h, xstring, ystring, xstring).render();
     
 /*
     var data;
