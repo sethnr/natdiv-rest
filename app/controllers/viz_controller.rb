@@ -20,21 +20,20 @@ class VizController < ApplicationController
   end
 
   def plot_scatter
-#    pieces = params[:id].split(":")
-#    @term = Cvterm.with_obo_id(pieces[0], pieces[1]).first
-#    @associations = ActiveSupport::JSON.encode(experiment_associations_data(@term))
-
     pieces = params[:id].split(":")
     @project = Project.find(pieces[0])
     @associations = ActiveSupport::JSON.encode(@project)
     render :action => 'plots/plot_scatter'
   end 
 
- def plot_xy
-#    pieces = params[:id].split(":")
-#    @term = Cvterm.with_obo_id(pieces[0], pieces[1]).first
-#    @associations = ActiveSupport::JSON.encode(experiment_associations_data(@term))
+  def plot_groupbar
+    pieces = params[:id].split(":")
+    @project = Project.find(pieces[0])
+    @associations = ActiveSupport::JSON.encode(@project)
+    render :action => 'plots/plot_groupbar'
+  end 
 
+ def plot_xy
     pieces = params[:id].split(":")
     @project = Project.find(pieces[0])
     @associations = ActiveSupport::JSON.encode(@project)

@@ -1,12 +1,11 @@
 /* traverse (any) json object to find nodes of a particular type */
 function nodeFromArray(objects, catchString) {
     for (var i = 0; i < objects.length; i++) {
-//	alert(i + " " + objects[i].value + " -> " + eval('objects[i].'+catchString));
 	if (eval('objects[i].'+catchString)) { return objects[i];}
     }
 }
 
-
+/*
 function traverse(o,func) {
     for (i in o) {
         func.apply(this,[i,o[i]]);      
@@ -16,7 +15,7 @@ function traverse(o,func) {
         }
     }
 }
-
+*/
 
 function jitter(data, space) {
   var d = data;
@@ -49,8 +48,6 @@ function jitter(data, space) {
 	    ytrans = diff * Math.sin(theta);
 	    xtrans = diff * Math.cos(theta);
 	  }
-	  
-	  
 	  //	  alert("hyp = "+hyp+" theta = "+theta+"\nxtr = "+xtrans+" ytrans = "+ytrans);
 	  d[_i].xpos = d[_i].xpos + (xtrans * direction);
 	  d[i].xpos = d[i].xpos + (xtrans * -1 * direction); // Move both points equally away.
@@ -81,78 +78,80 @@ function jitter(data, space) {
     return Math.atan2((a.ypos - b.ypos),(a.xpos - b.xpos));
   }
  
-
   // prevents endless push back-and-forth
   var iterations = 0;
-  //  var maxIterations = d.length * d.length;
-  var maxIterations = d.length;
-  
+  var maxIterations = d.length; 
   do {
     var overlaid = false;
     // For each data point in the array, push, if necessary, that data point
     // and it's surrounding data points away.
-    for(var i = 1; i < d.length -1; ++i) {
-    
+    for(var i = 1; i < d.length -1; ++i) {   
 	var o = push(i, -1);
 	overlaid = overlaid || o;
 	o = push(i, 1);
 	overlaid = overlaid || o;
       }
     iterations++;
-  } while(overlaid && iterations < maxIterations);
-  
+  } while(overlaid && iterations < maxIterations);  
   return d;
 }
 
+/* nd_json utility methods */
+
+/* find values within json object */
+/* uses fairly standard string notation "objectOne->objectTwo:methodOfSelection";
+   the method of selection should return a single node, if not the first matching node will be returned.
+   if no selection method is provided, should be a single value, NOT array
+   the array will be built with one value per nd_experiment object (to be changed to sample object when data allows)  */ 
+function findVals (valString) {
+  var objectPath = valString.split("->");
+  catchString = "data.experiments";
+  for (var i=0; i<objectPath.length;i++) {
+    var gets = objectPath[i].split(':');
+    var objectType = gets[0]; var predicate = gets[1];
+    if(predicate != undefined)
+      catchString = catchString.concat(".collect(function(d) {return nodeFromArray(d.",objectType,",\"",predicate,"\")})");
+    else
+      catchString = catchString.concat(".collect(function(d) {return d.",objectType,"})");
+  }
+  var myVals = eval(catchString);
+  return myVals;
+}
+
+/* make 3-dim data structure for plotting */
+function getDataHash (x, xvals, y, yvals, z, zvals) {
+  var valHash = new Hash();
+  valHash.set("X",xvals);
+  valHash.set("Y",yvals);
+  valHash.set("Z",zvals);
+ 
+  //  alert(x+" "+y+" "+z); 
+
+  var dataHash = data.experiments.map(function(d,i) {
+      var xval = this.get("X")[i];
+      var yval = this.get("Y")[i];
+      var zval = this.get("Z")[i];
+      return {x: xval, xpos: x(xval), 
+	  y: yval, ypos: y(yval),
+	  z: zval, zpos: z(zval),
+	  }},valHash);
+  
+  dataHash.sortBy(function(d) {return Number(d.y)});
+  return dataHash;
+}
 
 
 
 /* dot plot */
 
 function dotplot(data, w, h, xstring, ystring, zstring) {
-      /* Sizing and scales. */
-
-  var data, w, h; 
-  /*  
-    var xselect = 'cvalue != undefined';
-    var xval = 'cvalue.name';
-    var yselect = 'value >= 0';
-    var yval = 'value';
-  */
- 
-  function findVals (valString) {
-    var objectPath = valString.split("->");
-    catchString = "data.experiments";
-    for (var i=0; i<objectPath.length;i++) {
-      var gets = objectPath[i].split(':');
-      var objectType = gets[0]; var predicate = gets[1];
-      if(predicate != undefined)
-	catchString = catchString.concat(".collect(function(d) {return nodeFromArray(d.",objectType,",\"",predicate,"\")})");
-      else
-	catchString = catchString.concat(".collect(function(d) {return d.",objectType,"})");
-    }
-    //    alert(valString+"\n"+catchString);
-    var myVals = eval(catchString);
-    return myVals;
-  }
-
   
-  
-  
-  //  var xvals = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, xselect).cvalue.name});
-  //  alert(xvals+"\n\n"+myXvals);  
-  //  var yvals = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, yselect).value});
-  //  alert(yvals+"\n\n"+myYvals);
-
-
   function getScale(scaleVals, sz) {
     var numreg=/(^\d+$)|(^\d+\.\d+$)/;
     if(scaleVals.uniq().any(function(d) {return (!numreg.test(d))}))
       s = pv.Scale.ordinal(scaleVals.uniq()).split(0, sz);
     else
       s = pv.Scale.linear(0, scaleVals.max()).range(0, sz).nice();
-	
-    // alert((s instanceof pv.Scale.ordinal)+"\n"+s.class);
     return s;
   }
   
@@ -165,7 +164,7 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
 	.left(scale).anchor("bottom").add(pv.Label);
     }
     else {  // linear axis and ticks.
-      vis.add(pv.Rule).data(scale.ticks)
+      vis.add(pv.Rule).data(scale.ticks())
 	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
 	.left(scale).anchor("bottom")
 	.add(pv.Label).text(y.tickFormat);
@@ -181,50 +180,12 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
 	.bottom(scale).anchor("left").add(pv.Label);
     }
     else { // linear axis and ticks.
-      alert("here");
       vis.add(pv.Rule).data(scale.ticks())
 	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
 	.bottom(scale).anchor("left")
 	.add(pv.Label).text(y.tickFormat);
     }  
     return vis;
-  }
-
-
-
-  /*
-  if(xvals.uniq().any(function(d) {return (!numreg.test(d))}))
-    x = pv.Scale.ordinal(xvals.uniq()).split(0, w);
-  else
-    x = pv.Scale.linear(0, xvals.max()).range(0, w).nice()
-    
-  if(yvals.uniq().any(function(d) {return (!numreg.test(d))}))
-    y = pv.Scale.ordinal(yvals.uniq()).split(0, h);
-  else
-    y = pv.Scale.linear(0, yvals.max()).range(0, h).nice();
-  */
-
-
-
-
-
-  function getDataHash (xvals, yvals, zvals) {
-    /* make data structure */
-    var valHash = new Hash();
-    valHash.set("X",xvals);
-    valHash.set("Y",yvals);
-    valHash.set("Z",zvals);
-      
-    var dataHash = data.experiments.map(function(d,i) {
-	var xval = this.get("X")[i];
-	var yval = this.get("Y")[i];
-	var zval = this.get("Z")[i];
-	return {x: xval, xpos: x(xval), 
-	    y: yval, ypos: y(yval),
-	    z: zval, zpos: z(zval),
-	    }},valHash);
-    dataMap.sortBy(function(d) {return Number(d.y)});
-    return dataHash;
   }
 
 
@@ -236,9 +197,9 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
 
   var x = getScale(xvals, w);
   var y = getScale(yvals, h);
-  var z = pv.Colors.category10(), s = x.range().band / 2;
+  var z = pv.Colors.category10(); //, s = x.range().band / 2;
 
-  var dataMap = getDataHash(xvals, yvals, zvals);
+  var dataMap = getDataHash(x, xvals, y, yvals, z, zvals);
 
 
   /* Make root panel. */
@@ -254,38 +215,110 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
   setYAxis(yvals, y, vis);
 
 
-  /*  
-  // Y-axis and ticks. 
-   vis.add(pv.Rule)
-    .data(y.ticks())
-    .bottom(y)
-    .strokeStyle(function(d) {return d ? "#eee" : "#000"})
-    .anchor("left").add(pv.Label)
-    .text(y.tickFormat)
-    ;
-  */
-  /*
-  // X-axis and ticks. 
-  vis.add(pv.Rule)
-    .data(xvals.uniq())
-    .strokeStyle(function(d) {return d ? "#eee" : "#000"})
-    .left(x)
-    .anchor("bottom")
-    .add(pv.Label)  	
-    ;
-  */
-  
+
   /* The dot plot! */
   panel = vis.add(pv.Panel)
     .data(jitter(dataMap, 10))
-    //	 .data(dataMap)
     ;
   
   dots = panel.add(pv.Dot)
     .bottom(function(d) {return d.ypos})
     .left(function(d) {return d.xpos})
-    .strokeStyle(function(d) {return z(d.x)})
+    .strokeStyle(function(d) {return z(d.z)})
     ;
   
+  return vis;   
+}
+
+
+
+
+
+/* grouped bar chart */
+function groupedBarChart(data, w, h, xstring, ystring, zstring) {
+  
+  function getScale(scaleVals, sz) {
+    var numreg=/(^\d+$)|(^\d+\.\d+$)/;
+    if(scaleVals.uniq().any(function(d) {return (!numreg.test(d))}))
+      s = pv.Scale.ordinal(scaleVals.uniq()).split(0, sz);
+    else
+      s = pv.Scale.linear(0, scaleVals.max()).range(0, sz).nice();
+    return s;
+  }
+  
+  function setXAxis(scaleVals, scale, vis) {
+    // nb - find way to check scale type from scale?
+    vis.add(pv.Rule).data(scaleVals)
+      .strokeStyle(function(d) {return d ? "#eee" : "#000"})
+      .left(scale).anchor("bottom").add(pv.Label);
+    return vis;
+  }
+
+  function setYAxis(scaleVals, scale, vis) {
+
+    var numreg=/(^\d+$)|(^\d+\.\d+$)/;
+    if(scaleVals.uniq().any(function(d) {return (!numreg.test(d))})) { // ordinal axis and ticks.
+      vis.add(pv.Rule).data(scaleVals.uniq())
+	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
+	.bottom(scale).anchor("left").add(pv.Label);
+    }
+    else { // linear axis and ticks.
+      vis.add(pv.Rule).data(scale.ticks())
+	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
+	.bottom(scale).anchor("left")
+	.add(pv.Label).text(y.tickFormat);
+    }  
+    return vis;
+  }
+
+
+
+  /* create data */
+  var xvals = findVals(xstring);
+  var yvals = findVals(ystring);
+  var zvals = findVals(zstring);
+
+  //  var x = getScale(xvals, w);
+  var n = xvals.uniq().length;
+  var x = pv.Scale.ordinal(pv.range(n)).splitBanded(0, w, 9/10);
+
+  //  var x = getScale(xvals, w);
+  var y = getScale(yvals, h);
+  var z = pv.Colors.category10(); //, s = x.range().band / 2;
+
+  var dataMap = getDataHash(x, xvals, y, yvals, z, zvals);
+
+  //foreach unique value
+  //add new panel of width (newHash.length * colwidth) 
+  //add bars to new panel,
+  //repeat for each panel, colour properly
+  dataMap = dataMap.findAll(function (d) {return d.x == "normal";});
+
+
+  /* Make root panel. */
+  var vis = new pv.Panel()
+    .width(w)
+    .height(h)
+    .bottom(30)
+    .left(30)
+    .right(10)
+    .top(5);
+
+  setXAxis(xvals, x, vis);
+  setYAxis(yvals, y, vis);
+
+  /* The bar chart! */
+
+    var bar = vis.add(pv.Panel)
+      .data(dataMap)
+      .top(function(d) {x(d.y)})
+      .width(x.range().band)
+      .add(pv.Bar)
+      .data(function(d) {return d.y;})
+      .left(function() {return this.index * x.range().band / 5})
+      .width(x.range().band / 5)
+      //.left(return this.index)
+      .height(function(d) {return d.x})
+      //.fillStyle(pv.Colors.category20().by(pv.index));
   return vis;   
 }

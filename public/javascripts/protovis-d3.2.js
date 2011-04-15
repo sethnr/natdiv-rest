@@ -298,6 +298,8 @@ pv.css = function(e, p) {
  *
  * @param e the exception that triggered the error.
  */
+
+
 pv.error = function(e) {
   (typeof console == "undefined") ? alert(e) : console.error(e);
 };
