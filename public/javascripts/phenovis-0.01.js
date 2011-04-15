@@ -137,9 +137,6 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
   }
 
   
-  var xvals = findVals(xstring);
-  var yvals = findVals(ystring);
-  var zvals = findVals(zstring);
   
   
   //  var xvals = data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, xselect).cvalue.name});
@@ -148,8 +145,54 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
   //  alert(yvals+"\n\n"+myYvals);
 
 
-  var numreg=/(^\d+$)|(^\d+\.\d+$)/;
-  var x, y; //check scale type and return  
+  function getScale(scaleVals, sz) {
+    var numreg=/(^\d+$)|(^\d+\.\d+$)/;
+    if(scaleVals.uniq().any(function(d) {return (!numreg.test(d))}))
+      s = pv.Scale.ordinal(scaleVals.uniq()).split(0, sz);
+    else
+      s = pv.Scale.linear(0, scaleVals.max()).range(0, sz).nice();
+	
+    // alert((s instanceof pv.Scale.ordinal)+"\n"+s.class);
+    return s;
+  }
+  
+  function setXAxis(scaleVals, scale, vis) {
+    var numreg=/(^\d+$)|(^\d+\.\d+$)/;
+    // nb - find way to check scale type from scale?
+    if(scaleVals.uniq().any(function(d) {return (!numreg.test(d))})) { // ordinal axis and ticks.
+      vis.add(pv.Rule).data(scaleVals.uniq())
+	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
+	.left(scale).anchor("bottom").add(pv.Label);
+    }
+    else {  // linear axis and ticks.
+      vis.add(pv.Rule).data(scale.ticks)
+	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
+	.left(scale).anchor("bottom")
+	.add(pv.Label).text(y.tickFormat);
+    }  
+    return vis;
+  }
+
+  function setYAxis(scaleVals, scale, vis) {
+    var numreg=/(^\d+$)|(^\d+\.\d+$)/;
+    if(scaleVals.uniq().any(function(d) {return (!numreg.test(d))})) { // ordinal axis and ticks.
+      vis.add(pv.Rule).data(scaleVals.uniq())
+	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
+	.bottom(scale).anchor("left").add(pv.Label);
+    }
+    else { // linear axis and ticks.
+      alert("here");
+      vis.add(pv.Rule).data(scale.ticks())
+	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
+	.bottom(scale).anchor("left")
+	.add(pv.Label).text(y.tickFormat);
+    }  
+    return vis;
+  }
+
+
+
+  /*
   if(xvals.uniq().any(function(d) {return (!numreg.test(d))}))
     x = pv.Scale.ordinal(xvals.uniq()).split(0, w);
   else
@@ -159,56 +202,78 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
     y = pv.Scale.ordinal(yvals.uniq()).split(0, h);
   else
     y = pv.Scale.linear(0, yvals.max()).range(0, h).nice();
+  */
 
-  var z = pv.Colors.category10(),
-    s = x.range().band / 2;
-  
-  /* make data structure */
-  var valHash = new Hash();
-  valHash.set("X",xvals)
-  valHash.set("Y",yvals)
-  valHash.set("Z",zvals)
 
-  dataMap = data.experiments.map(function(d,i) {
-      var xval = this.get("X")[i];
-      var yval = this.get("Y")[i];
-      var zval = this.get("Z")[i];
-      return {x: xval, xpos: x(xval), 
-	  y: yval, ypos: y(yval),
-	  z: zval, zpos: z(zval),
-	  }},valHash);
-  dataMap.sortBy(function(d) {return Number(d.y)});
 
-  
-  /* The root panel. */
+
+
+  function getDataHash (xvals, yvals, zvals) {
+    /* make data structure */
+    var valHash = new Hash();
+    valHash.set("X",xvals);
+    valHash.set("Y",yvals);
+    valHash.set("Z",zvals);
+      
+    var dataHash = data.experiments.map(function(d,i) {
+	var xval = this.get("X")[i];
+	var yval = this.get("Y")[i];
+	var zval = this.get("Z")[i];
+	return {x: xval, xpos: x(xval), 
+	    y: yval, ypos: y(yval),
+	    z: zval, zpos: z(zval),
+	    }},valHash);
+    dataMap.sortBy(function(d) {return Number(d.y)});
+    return dataHash;
+  }
+
+
+
+  /* create data */
+  var xvals = findVals(xstring);
+  var yvals = findVals(ystring);
+  var zvals = findVals(zstring);
+
+  var x = getScale(xvals, w);
+  var y = getScale(yvals, h);
+  var z = pv.Colors.category10(), s = x.range().band / 2;
+
+  var dataMap = getDataHash(xvals, yvals, zvals);
+
+
+  /* Make root panel. */
   var vis = new pv.Panel()
     .width(w)
     .height(h)
-    .bottom(20)
-    .left(20)
+    .bottom(30)
+    .left(30)
     .right(10)
     .top(5);
-  
-  /* Y-axis and ticks. */
-  vis.add(pv.Rule)
+
+  setXAxis(xvals, x, vis);
+  setYAxis(yvals, y, vis);
+
+
+  /*  
+  // Y-axis and ticks. 
+   vis.add(pv.Rule)
     .data(y.ticks())
-    //.data(yvals.uniq)
     .bottom(y)
     .strokeStyle(function(d) {return d ? "#eee" : "#000"})
     .anchor("left").add(pv.Label)
     .text(y.tickFormat)
     ;
-  
-  /* X-axis and ticks. */
+  */
+  /*
+  // X-axis and ticks. 
   vis.add(pv.Rule)
-    //    .data(x.ticks())
     .data(xvals.uniq())
     .strokeStyle(function(d) {return d ? "#eee" : "#000"})
     .left(x)
     .anchor("bottom")
     .add(pv.Label)  	
     ;
-  
+  */
   
   /* The dot plot! */
   panel = vis.add(pv.Panel)
