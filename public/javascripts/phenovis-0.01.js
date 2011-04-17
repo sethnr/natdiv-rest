@@ -279,7 +279,7 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
   var zvals = findVals(zstring);
 
   //  var x = getScale(xvals, w);
-  var n = xvals.uniq().length;
+  var n = xvals.length;
   var x = pv.Scale.ordinal(pv.range(n)).splitBanded(0, w, 9/10);
 
   //  var x = getScale(xvals, w);
@@ -288,14 +288,8 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
 
   var dataMap = getDataHash(x, xvals, y, yvals, z, zvals);
 
-  //foreach unique value
-  //add new panel of width (newHash.length * colwidth) 
-  //add bars to new panel,
-  //repeat for each panel, colour properly
-  dataMap = dataMap.findAll(function (d) {return d.x == "normal";});
-
-
   /* Make root panel. */
+
   var vis = new pv.Panel()
     .width(w)
     .height(h)
@@ -307,18 +301,48 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
   setXAxis(xvals, x, vis);
   setYAxis(yvals, y, vis);
 
-  /* The bar chart! */
+  //foreach unique value
+  //add bars to new panel,
+  //repeat for each panel, colour properly
 
-    var bar = vis.add(pv.Panel)
-      .data(dataMap)
-      .top(function(d) {x(d.y)})
+  var left = 0;
+  var bw = w / xvals.length;
+  alert(bw);
+  var uxvals = xvals.uniq().sort();
+
+  for (var i = 0; i<uxvals.length; i++) {
+    //add new panel of width (newHash.length * colwidth) 
+    
+    dataMapSub = dataMap.findAll(function (d) {return d.x == uxvals[i];});
+
+    alert("left = "+left+" xrange = "+x.range().band);
+    var catdiv = vis.add(pv.Panel)
+      .width(dataMapSub.length * bw)
+      .left(left)
+      .width(bw * dataMapSub.length)
+      ;
+    left = left + (bw * dataMapSub.length);
+
+    
+    var bar = catdiv.add(pv.Bar)
+      .data(dataMapSub)
+      .left(function() {return x(this.index)})
       .width(x.range().band)
-      .add(pv.Bar)
-      .data(function(d) {return d.y;})
-      .left(function() {return this.index * x.range().band / 5})
-      .width(x.range().band / 5)
-      //.left(return this.index)
-      .height(function(d) {return d.x})
-      //.fillStyle(pv.Colors.category20().by(pv.index));
+      .bottom(0)
+      .height(function(d) {alert(d.y); return y(d.y)})
+      .fillStyle(function(d) {return z(d.x)})
+      ;
+ 
+    bar.anchor("top").add(pv.Label)
+      .textStyle("white")
+      .text(function(d) {return d.y;});
+ 
+    bar.anchor("bottom").add(pv.Label)
+      .textMargin(5)
+      .textBaseline("top")
+      .text(function(d) {return d.y});
+ 
+      }
+    
   return vis;   
 }
