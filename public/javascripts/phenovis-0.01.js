@@ -430,13 +430,14 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
 	.height(h)
 	.top(90)
 	.left(90);
-    
-    var dataLinks;
+
+    alert(dataHash);
 
     var layout = vis.add(pv.Layout.Matrix)
 	.nodes(xvals)
 	.links(dataHash)
-	.sort(function(a, b) {return b.group - a.group});
+      //	.sort(function(a, b) {return b.group - a.group})
+;
     
     layout.link.add(pv.Bar)
 	.fillStyle(function(l) {return l.z})

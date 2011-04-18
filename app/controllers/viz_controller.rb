@@ -47,6 +47,13 @@ class VizController < ApplicationController
     render :action => 'plots/plot_bubble'
   end 
 
+  def plot_matrix
+    pieces = params[:id].split(":")
+    @project = Project.find(pieces[0])
+    @associations = ActiveSupport::JSON.encode(@project)
+    render :action => 'plots/plot_matrix'
+  end 
+
   def project_tree
     pieces = params[:id].split(":")
     @project = Project.find(pieces[0])
