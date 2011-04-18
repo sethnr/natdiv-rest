@@ -103,7 +103,7 @@ function jitter(data, space) {
    the method of selection should return a single node, if not the first matching node will be returned.
    if no selection method is provided, should be a single value, NOT array
    the array will be built with one value per nd_experiment object (to be changed to sample object when data allows)  */ 
-function findVals (valString) {
+function findVals (valString, data) {
   var objectPath = valString.split("->");
   catchString = "data.experiments";
   for (var i=0; i<objectPath.length;i++) {
@@ -140,6 +140,29 @@ function getDataHash (x, xvals, y, yvals, z, zvals) {
   return dataHash;
 }
 
+/* make 3-dim data structure for plotting */
+/*
+function getDataLinks (xvals, y, data) {
+  var valHash = new Hash();
+  valHash.set("X",xvals);
+  valHash.set("Y",yvals);
+  valHash.set("Z",zvals);
+ 
+  //  alert(x+" "+y+" "+z); 
+
+  var dataHash = data.experiments.map(function(d,i) {
+      var xval = this.get("X")[i];
+      var yval = this.get("Y")[i];
+      var zval = this.get("Z")[i];
+      return {x: xval, xpos: x(xval), 
+	  y: yval, ypos: y(yval),
+	  z: zval, zpos: z(zval),
+	  }},valHash);
+  
+  dataHash.sortBy(function(d) {return Number(d.y)});
+  return dataHash;
+}
+*/
 
 
 /* dot plot */
@@ -151,7 +174,7 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
     if(scaleVals.uniq().any(function(d) {return (!numreg.test(d))}))
       s = pv.Scale.ordinal(scaleVals.uniq()).split(0, sz);
     else
-      s = pv.Scale.linear(0, scaleVals.max()).range(0, sz).nice();
+	s = pv.Scale.linear(0, scaleVals.collect(function(d) {return Number(d)}).max()).range(0, sz).nice();
     return s;
   }
   
@@ -167,7 +190,7 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
       vis.add(pv.Rule).data(scale.ticks())
 	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
 	.left(scale).anchor("bottom")
-	.add(pv.Label).text(y.tickFormat);
+	.add(pv.Label).text(scale.tickFormat);
     }  
     return vis;
   }
@@ -191,9 +214,9 @@ function dotplot(data, w, h, xstring, ystring, zstring) {
 
 
   /* create data */
-  var xvals = findVals(xstring);
-  var yvals = findVals(ystring);
-  var zvals = findVals(zstring);
+  var xvals = findVals(xstring, data);
+  var yvals = findVals(ystring, data);
+  var zvals = findVals(zstring, data);
 
   var x = getScale(xvals, w);
   var y = getScale(yvals, h);
@@ -242,7 +265,7 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
     if(scaleVals.uniq().any(function(d) {return (!numreg.test(d))}))
       s = pv.Scale.ordinal(scaleVals.uniq()).split(0, sz);
     else
-      s = pv.Scale.linear(0, scaleVals.max()).range(0, sz).nice();
+      s = pv.Scale.linear(0, scaleVals.collect(function(d) {return Number(d)}).max()).range(0, sz).nice();    
     return s;
   }
   
@@ -274,10 +297,11 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
 
 
   /* create data */
-  var xvals = findVals(xstring);
-  var yvals = findVals(ystring);
-  var zvals = findVals(zstring);
+  var xvals = findVals(xstring, data);
+  var yvals = findVals(ystring, data);
+  var zvals = findVals(zstring, data);
 
+//  alert(yvals.collect(function(d) {return d}).sort()+"\n"+yvals.max()+"\n");
   //  var x = getScale(xvals, w);
   var n = xvals.length;
   var x = pv.Scale.ordinal(pv.range(n)).splitBanded(0, w, 9/10);
@@ -293,12 +317,12 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
   var vis = new pv.Panel()
     .width(w)
     .height(h)
-    .bottom(30)
+    .bottom(40)
     .left(30)
     .right(10)
     .top(5);
 
-  setXAxis(xvals, x, vis);
+
   setYAxis(yvals, y, vis);
 
   //foreach unique value
@@ -307,7 +331,6 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
 
   var left = 0;
   var bw = w / xvals.length;
-  alert(bw);
   var uxvals = xvals.uniq().sort();
 
   for (var i = 0; i<uxvals.length; i++) {
@@ -315,34 +338,113 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
     
     dataMapSub = dataMap.findAll(function (d) {return d.x == uxvals[i];});
 
-    alert("left = "+left+" xrange = "+x.range().band);
+//    alert("left = "+left+" xrange = "+x.range().band);
     var catdiv = vis.add(pv.Panel)
-      .width(dataMapSub.length * bw)
-      .left(left)
-      .width(bw * dataMapSub.length)
-      ;
+	.width(dataMapSub.length * bw)
+	.left(left)
+	.width(bw * dataMapSub.length)
+	;
+    catdiv
+	.anchor("bottom").add(pv.Label)
+//	.text(function(d) {d.collect(function(e) {return d.x}).uniq()[0]})
+	.textMargin(25)
+	.textBaseline("top")
+	.text(uxvals[i])
+	;
     left = left + (bw * dataMapSub.length);
 
     
     var bar = catdiv.add(pv.Bar)
-      .data(dataMapSub)
-      .left(function() {return x(this.index)})
-      .width(x.range().band)
-      .bottom(0)
-      .height(function(d) {alert(d.y); return y(d.y)})
-      .fillStyle(function(d) {return z(d.x)})
-      ;
+	.data(dataMapSub)
+//	.left(function(d) {alert("index = "+this.index+" d = "+d.x); return x(this.index)})
+	.left(function() {return x(this.index)})
+	.width(x.range().band)
+	.bottom(0)
+	.height(function(d) {return y(d.y)})
+	.fillStyle(function(d) {return z(d.x)})
+	;
  
     bar.anchor("top").add(pv.Label)
-      .textStyle("white")
-      .text(function(d) {return d.y;});
- 
+	.textStyle("white")
+	.text(function(d) {return d.y;});
+    
     bar.anchor("bottom").add(pv.Label)
-      .textMargin(5)
-      .textBaseline("top")
-      .text(function(d) {return d.y});
+	.textMargin(5)
+	.textStyle(function(d) {return d ? "#aaa" : "#000"})
+	.textBaseline("top")
+	.text(function(d) {return d.z});
  
       }
     
   return vis;   
+}
+
+
+function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
+    /* create data */
+    var xvals = findVals(xstring, data);
+    var yvals = findVals(ystring, data);
+    dataHash = new Hash();
+    if(zstring == undefined) {
+//	var xuniq = xvals.uniq();
+//	var yuniq = yvals.uniq();
+/*	for(var x=0; x<xuniq; x++) {
+	    for(var y=0; y<uniq; y++) {
+	    }
+	}
+*/
+	var valHash = new Hash();
+	valHash.set("X",xvals);
+	valHash.set("Y",yvals);
+	var tempHash = data.experiments.map(function(d,i) {
+		var xval = this.get("X")[i];
+		var yval = this.get("Y")[i];
+		return {source: xval, 
+			target: yval,
+			}},valHash);
+
+	tempHash.each(function(d,i) {datahash[d.source][d.target]++;},dataHash);	
+    }
+    else {
+	var zvals = findVals(zstring, data);
+	
+	var valHash = new Hash();
+	valHash.set("X",xvals);
+	valHash.set("Y",yvals);
+	valHash.set("Z",zvals);
+	dataHash = data.experiments.map(function(d,i) {
+		var xval = this.get("X")[i];
+		var yval = this.get("Y")[i];
+		var zval = this.get("Z")[i];
+		return {source: xval, 
+			target: yval,
+			value: zval,
+			}},valHash);
+    }
+    
+
+    var color = pv.Colors.category19().by(function(d) {return d.z});
+    
+    var vis = new pv.Panel()
+	.width(w)
+	.height(h)
+	.top(90)
+	.left(90);
+    
+    var dataLinks;
+
+    var layout = vis.add(pv.Layout.Matrix)
+	.nodes(xvals)
+	.links(dataHash)
+	.sort(function(a, b) {return b.group - a.group});
+    
+    layout.link.add(pv.Bar)
+	.fillStyle(function(l) {return l.z})
+	.antialias(false)
+	.lineWidth(1);
+    
+    layout.label.add(pv.Label)
+	.textStyle(color);
+    
+    return vis;
 }
