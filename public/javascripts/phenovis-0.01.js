@@ -384,40 +384,60 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
     /* create data */
     var xvals = findVals(xstring, data);
     var yvals = findVals(ystring, data);
-    dataHash = new Hash();
-    if(zstring == undefined) {
-	var xuniq = xvals.uniq();
-//	var yuniq = yvals.uniq();
-	for(var i=0; i<xuniq.length; i++) {
-	  dataHash[xuniq[i]] = new Hash();
-	  //	  alert(xuniq[i]+" -> "+dataHash[xuniq[i]]);
-	  /*	    for(var y=0; y<uniq; y++) {
-		    }*/
-	}
 
+    var zmax = 1;
+
+    dataHash = new Array();
+
+    if(zstring == undefined) {
+      
 	var valHash = new Hash();
 	valHash.set("X",xvals);
 	valHash.set("Y",yvals);
-	var tempHash = data.experiments.map(function(d,i) {
+
+	var xvalsU = xvals.uniq().sort();
+	var yvalsU = yvals.uniq().sort();
+
+	tempHash = data.experiments.map(function(d,i) {
 		var xval = this.get("X")[i];
 		var yval = this.get("Y")[i];
-		//		alert("source: "+xval+"  target: "+yval);
-			
-		return {source: xval, 
-			target: yval,
+		return {X: xval, 
+			Y: yval,
 			}},valHash);
-	/*REWRITE SO HASH IS IN FORM :source :target :value */
-	tempHash.each(function(d,i) { 
-	    if (dataHash[d.source][d.target] == undefined) dataHash[d.source][d.target]=1;
-	    else dataHash[d.source][d.target]++;
-	    alert(d.source+" -> "+d.target+" = "+dataHash[d.source][d.target]);
+
+	data.experiments.each(function(d,i) {
+	    var xval = this[i].X; var xi = xvalsU.indexOf(xval);
+	    var yval = this[i].Y; var yi = yvalsU.indexOf(yval);
+
+		
+		//		alert("source: "+xval+"  target: "+yval);
+	    var datum = dataHash.find(function(d) {return (d.sourceName == xval && d.targetName == yval)});
+	    //		alert(xval+" "+yval+" "+datum);
+	    (datum != undefined)? datum.value++: 
+		
+		  dataHash.push({source: xi, 
+			target: yi,
+			sourceName: xval,
+			targetName: yval,
+			value: 1});
+		/*		alert(dataHash.length+" \n"+
+		      dataHash.find(function(d) {return (d.source == xval && d.target == yval)}).source+" "+
+		      dataHash.find(function(d) {return (d.source == xval && d.target == yval)}).target+" "+
+		      dataHash.find(function(d) {return (d.source == xval && d.target == yval)}).value+" "
+		      );
+		*/
 	  }
-	  ,dataHash);	
-	
+	  ,tempHash);
+	dataHash.each(function(d) {alert(d.source+":"+d.sourceName+" -> "+
+					 d.target+":"+d.targetName+" = "+
+					 d.value);
+					 if(d.value > zmax) {zmax = d.value;}});
+
+	/*REWRITE SO HASH IS IN FORM :source :target :value */
     }
     else {
 	var zvals = findVals(zstring, data);
-	
+	zmax = zvals.max();
 	var valHash = new Hash();
 	valHash.set("X",xvals);
 	valHash.set("Y",yvals);
@@ -433,8 +453,8 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
     }
     
 
-    var color = pv.Colors.category19().by(function(d) {return d.z});
-    
+    var color = pv.Scale.linear(0, zmax).range("green","red");
+
     var vis = new pv.Panel()
 	.width(w)
 	.height(h)
@@ -446,16 +466,16 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
     var layout = vis.add(pv.Layout.Matrix)
       .nodes(xvals.uniq().sort())
 	.links(dataHash)
-      //	.sort(function(a, b) {return b.group - a.group})
-;
+        .sort(function(a, b) {return b.name - a.name})
+      ;
     
     layout.link.add(pv.Bar)
-      .fillStyle(function(l) {alert(l.value); return l.value})
+      .fillStyle(function(l) {alert(l+" "+l.value);return color(l.value)})
 	.antialias(false)
 	.lineWidth(1);
     
     layout.label.add(pv.Label)
-	.textStyle(color);
-    
+      //	.textStyle(color)
+      ;
     return vis;
 }

@@ -1,0 +1,38 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "plot_bubble" -%>
+<% end %>
+
+<div id="center">
+  <div id="fig">
+
+
+  <script type="text/javascript+protovis">
+    
+
+    var ystring = "phenotypes:value>=0->value";
+    var xstring = "phenotypes:cvalue!=undefined->cvalue.name";
+    var zstring = "phenotypes:cvalue!=undefined->cvalue.name";
+
+    var w = 500;  var h = 400;
+
+    var data = '<%= @associations.to_s%>'.evalJSON();
+
+    frequencyMatrix(data, w, h, xstring, xstring).render();
+    
+/*
+    var data;
+    new Ajax.Request('http://localhost:3000/project/2.json', {
+    	method:'get',
+  	requestHeaders: {Accept: 'application/json'},
+  	onSuccess: function(transport){
+    	    data = transport.responseText.evalJSON();
+  	    alert(data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, xselect).cvalue.name}).uniq());
+	}
+	});
+
+*/
+
+
+    </script>
+  </div>
+</div>
