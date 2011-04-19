@@ -5,17 +5,6 @@ function nodeFromArray(objects, catchString) {
     }
 }
 
-/*
-function traverse(o,func) {
-    for (i in o) {
-        func.apply(this,[i,o[i]]);      
-        if (typeof(o[i])=="object") {
-                //going on step down in the object tree!!
-                traverse(o[i],func);
-        }
-    }
-}
-*/
 
 function jitter(data, space) {
   var d = data;
@@ -124,8 +113,6 @@ function getDataHash (x, xvals, y, yvals, z, zvals) {
   valHash.set("X",xvals);
   valHash.set("Y",yvals);
   valHash.set("Z",zvals);
- 
-  //  alert(x+" "+y+" "+z); 
 
   var dataHash = data.experiments.map(function(d,i) {
       var xval = this.get("X")[i];
@@ -301,19 +288,15 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
   var yvals = findVals(ystring, data);
   var zvals = findVals(zstring, data);
 
-//  alert(yvals.collect(function(d) {return d}).sort()+"\n"+yvals.max()+"\n");
-  //  var x = getScale(xvals, w);
   var n = xvals.length;
-  var x = pv.Scale.ordinal(pv.range(n)).splitBanded(0, w, 9/10);
 
-  //  var x = getScale(xvals, w);
+  var x = pv.Scale.ordinal(pv.range(n)).splitBanded(0, w, 9/10);
   var y = getScale(yvals, h);
   var z = pv.Colors.category10(); //, s = x.range().band / 2;
 
   var dataMap = getDataHash(x, xvals, y, yvals, z, zvals);
 
   /* Make root panel. */
-
   var vis = new pv.Panel()
     .width(w)
     .height(h)
@@ -325,10 +308,6 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
 
   setYAxis(yvals, y, vis);
 
-  //foreach unique value
-  //add bars to new panel,
-  //repeat for each panel, colour properly
-
   var left = 0;
   var bw = w / xvals.length;
   var uxvals = xvals.uniq().sort();
@@ -338,7 +317,6 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
     
     dataMapSub = dataMap.findAll(function (d) {return d.x == uxvals[i];});
 
-//    alert("left = "+left+" xrange = "+x.range().band);
     var catdiv = vis.add(pv.Panel)
 	.width(dataMapSub.length * bw)
 	.left(left)
@@ -346,7 +324,6 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
 	;
     catdiv
 	.anchor("bottom").add(pv.Label)
-//	.text(function(d) {d.collect(function(e) {return d.x}).uniq()[0]})
 	.textMargin(25)
 	.textBaseline("top")
 	.text(uxvals[i])
@@ -356,7 +333,6 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
     
     var bar = catdiv.add(pv.Bar)
 	.data(dataMapSub)
-//	.left(function(d) {alert("index = "+this.index+" d = "+d.x); return x(this.index)})
 	.left(function() {return x(this.index)})
 	.width(x.range().band)
 	.bottom(0)
@@ -409,10 +385,7 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
 	    var xval = this[i].X; var xi = xvalsU.indexOf(xval);
 	    var yval = this[i].Y; var yi = yvalsU.indexOf(yval);
 
-		
-		//		alert("source: "+xval+"  target: "+yval);
 	    var datum = dataHash.find(function(d) {return (d.sourceName == xval && d.targetName == yval)});
-	    //		alert(xval+" "+yval+" "+datum);
 	    (datum != undefined)? datum.value++: 
 		
 		  dataHash.push({source: xi, 
@@ -420,6 +393,7 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
 			sourceName: xval,
 			targetName: yval,
 			value: 1});
+
 		/*		alert(dataHash.length+" \n"+
 		      dataHash.find(function(d) {return (d.source == xval && d.target == yval)}).source+" "+
 		      dataHash.find(function(d) {return (d.source == xval && d.target == yval)}).target+" "+
@@ -428,12 +402,7 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
 		*/
 	  }
 	  ,tempHash);
-	dataHash.each(function(d) {/*(alert(d.source+":"+d.sourceName+" -> "+
-					 d.target+":"+d.targetName+" = "+
-					 d.value);*/
-					 if(d.value > zmax) {zmax = d.value;}});
-
-	/*REWRITE SO HASH IS IN FORM :source :target :value */
+	dataHash.each(function(d) {if(d.value > zmax) {zmax = d.value;}});
     }
     else {
 	var zvals = findVals(zstring, data);
@@ -458,37 +427,23 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
     var vis = new pv.Panel()
 	.width(w)
 	.height(h)
-	.top(90)
-	.left(90);
+	.top(100)
+	.left(100);
 
-    //    alert("hash = "+dataHash);
+    var dir = false;
 
-    var layout = vis.add(pv.Layout.Matrix)
+    var layout = vis.add(pv.Layout.Matrix).directed(dir)
+//    var layout = vis.add(pv.Layout.Arc)
+//    var layout = vis.add(pv.Layout.Force)
       .nodes(xvals.uniq().sort())
 	.links(dataHash)
         .sort(function(a, b) {return b.name - a.name})
       ;
     
-    /*    layout.links(function(d) {
-	    
-	    layout.add(pv.Bar).fillStyle(function(l) {alert(l+" "+d.value+" "+color(s.value));return color(l.value)})
-	    .antialias(false)
-	    .lineWidth(1);
-	});
-    */
-
-    var count=0;
     layout.link.add(pv.Bar)
-	.fillStyle(function(l) {
-//		var nodeVal = l.sourceNode.index + l.targetNode.index;
-		var nodeVal = l.linkValue/2;
-		alert(count+" "+zmax+" "+l.sourceNode.index+" "+l.targetNode.index+" "+l.linkValue+" -> "+nodeVal+" "+c(nodeVal).color);count++;
-		return c(nodeVal);
-	    })
+	.fillStyle(function(l) {return c(l.linkValue/(dir?1:2));})
 	.antialias(false)
 	.lineWidth(1);
-
-//    alert(layout.node); //.fillStyle(function(l) {alert(l.name+" "+l.value);return color(l.value)})
 
     layout.label.add(pv.Label)
       //	.textStyle(color)
