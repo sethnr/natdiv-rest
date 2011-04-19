@@ -428,9 +428,9 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
 		*/
 	  }
 	  ,tempHash);
-	dataHash.each(function(d) {alert(d.source+":"+d.sourceName+" -> "+
+	dataHash.each(function(d) {/*(alert(d.source+":"+d.sourceName+" -> "+
 					 d.target+":"+d.targetName+" = "+
-					 d.value);
+					 d.value);*/
 					 if(d.value > zmax) {zmax = d.value;}});
 
 	/*REWRITE SO HASH IS IN FORM :source :target :value */
@@ -453,7 +453,7 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
     }
     
 
-    var color = pv.Scale.linear(0, zmax).range("green","red");
+    var c = pv.Scale.linear(0, zmax).range("white","red");
 
     var vis = new pv.Panel()
 	.width(w)
@@ -469,11 +469,27 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
         .sort(function(a, b) {return b.name - a.name})
       ;
     
+    /*    layout.links(function(d) {
+	    
+	    layout.add(pv.Bar).fillStyle(function(l) {alert(l+" "+d.value+" "+color(s.value));return color(l.value)})
+	    .antialias(false)
+	    .lineWidth(1);
+	});
+    */
+
+    var count=0;
     layout.link.add(pv.Bar)
-      .fillStyle(function(l) {alert(l+" "+l.value);return color(l.value)})
+	.fillStyle(function(l) {
+//		var nodeVal = l.sourceNode.index + l.targetNode.index;
+		var nodeVal = l.linkValue/2;
+		alert(count+" "+zmax+" "+l.sourceNode.index+" "+l.targetNode.index+" "+l.linkValue+" -> "+nodeVal+" "+c(nodeVal).color);count++;
+		return c(nodeVal);
+	    })
 	.antialias(false)
 	.lineWidth(1);
-    
+
+//    alert(layout.node); //.fillStyle(function(l) {alert(l.name+" "+l.value);return color(l.value)})
+
     layout.label.add(pv.Label)
       //	.textStyle(color)
       ;
