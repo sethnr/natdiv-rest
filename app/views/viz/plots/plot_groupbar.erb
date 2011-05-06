@@ -13,8 +13,8 @@
 //    var ystring = "phenotypes:cvalue!=undefined->cvalue.name";
     var ystring = "phenotypes:value>=0->value";
     var xstring = "phenotypes:cvalue!=undefined->cvalue.name";
-    var zstring = "id";
-
+//    var zstring = "id";
+      var zstring = "phenotypes:value>=0->attribute.name";
     var w = 500;  var h = 400;
 
     var data = '<%= @associations.to_s%>'.evalJSON();

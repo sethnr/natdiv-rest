@@ -13,6 +13,7 @@ class NdExperiment < ActiveRecord::Base
   has_and_belongs_to_many :projects
   has_many :nd_experiment_protocols
   has_many :nd_experiment_stocks
+#  has_many :stocks, through: :nd_experiment_stocks;
   has_and_belongs_to_many :stocks
 
   validates_presence_of(:nd_geolocation_id, :type_id)
@@ -25,7 +26,7 @@ class NdExperiment < ActiveRecord::Base
       :genotypes => genotypes.as_json,
 #      :phenotypes => nd_experiment_phenotypes.phenotype.name,
       :phenotypes => phenotypes.as_json,
-      :stocks => nd_experiment_stocks
+      :stocks => stocks.as_json
     }
   end
 

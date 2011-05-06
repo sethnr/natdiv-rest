@@ -265,19 +265,20 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
   }
 
   function setYAxis(scaleVals, scale, vis) {
-
+/*
     var numreg=/(^\d+$)|(^\d+\.\d+$)/;
     if(scaleVals.uniq().any(function(d) {return (!numreg.test(d))})) { // ordinal axis and ticks.
       vis.add(pv.Rule).data(scaleVals.uniq())
 	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
 	.bottom(scale).anchor("left").add(pv.Label);
     }
-    else { // linear axis and ticks.
+*/
+//    else { // linear axis and ticks.
       vis.add(pv.Rule).data(scale.ticks())
 	.strokeStyle(function(d) {return d ? "#eee" : "#000"})
 	.bottom(scale).anchor("left")
 	.add(pv.Label).text(y.tickFormat);
-    }  
+//    }  
     return vis;
   }
 
@@ -292,7 +293,7 @@ function groupedBarChart(data, w, h, xstring, ystring, zstring) {
 
   var x = pv.Scale.ordinal(pv.range(n)).splitBanded(0, w, 9/10);
   var y = getScale(yvals, h);
-  var z = pv.Colors.category10(); //, s = x.range().band / 2;
+  var z = pv.Colors.category19(); //, s = x.range().band / 2;
 
   var dataMap = getDataHash(x, xvals, y, yvals, z, zvals);
 
@@ -450,3 +451,5 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
       ;
     return vis;
 }
+
+
