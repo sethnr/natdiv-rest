@@ -26,7 +26,7 @@ class NdExperiment < ActiveRecord::Base
       :genotypes => genotypes.as_json,
 #      :phenotypes => nd_experiment_phenotypes.phenotype.name,
       :phenotypes => phenotypes.as_json,
-      :stocks => stocks.as_json
+#      :stocks => stocks.as_json
     }
   end
 
