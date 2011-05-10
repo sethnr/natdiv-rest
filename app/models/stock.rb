@@ -15,8 +15,8 @@ class Stock < ActiveRecord::Base
   has_many :stockprops , :foreign_key => :stock_id
   has_many :stocksamples
   has_many :nd_experiment_stocks
-#  has_many :nd_experiments, :through => :nd_experiment_stocks
-  has_and_belongs_to_many :nd_experiments, :join_table => :nd_experiment_stock
+  has_many :nd_experiments, :through => :nd_experiment_stocks
+#  has_and_belongs_to_many :nd_experiments, :join_table => :nd_experiment_stock
   validates_presence_of( :uniquename, :type_id)
 
   def as_json(options = {})

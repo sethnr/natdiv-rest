@@ -93,17 +93,21 @@ function jitter(data, space) {
    if no selection method is provided, should be a single value, NOT array
    the array will be built with one value per nd_experiment object (to be changed to sample object when data allows)  */ 
 function findVals (valString, data) {
+//    alert(valString)
   var objectPath = valString.split("->");
-  catchString = "data.experiments";
+  catchString = "data.stocks";
   for (var i=0; i<objectPath.length;i++) {
     var gets = objectPath[i].split(':');
     var objectType = gets[0]; var predicate = gets[1];
+//    alert("object = "+objectType+" predicate = "+predicate);
     if(predicate != undefined)
       catchString = catchString.concat(".collect(function(d) {return nodeFromArray(d.",objectType,",\"",predicate,"\")})");
     else
       catchString = catchString.concat(".collect(function(d) {return d.",objectType,"})");
   }
+  alert(catchString);
   var myVals = eval(catchString);
+  alert(myVals.length+"\n"+myVals);
   return myVals;
 }
 
@@ -113,8 +117,8 @@ function getDataHash (x, xvals, y, yvals, z, zvals) {
   valHash.set("X",xvals);
   valHash.set("Y",yvals);
   valHash.set("Z",zvals);
-
-  var dataHash = data.experiments.map(function(d,i) {
+  
+  var dataHash = data.stocks.map(function(d,i) {
       var xval = this.get("X")[i];
       var yval = this.get("Y")[i];
       var zval = this.get("Z")[i];

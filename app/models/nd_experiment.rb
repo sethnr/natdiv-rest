@@ -15,16 +15,17 @@ class NdExperiment < ActiveRecord::Base
   has_many :nd_experiment_stocks
 #  has_many :stocks, through: :nd_experiment_stocks;
   has_and_belongs_to_many :stocks
+  has_one :type, :class_name => "Cvterm", :primary_key => "type_id", :foreign_key => "cvterm_id"
 
   validates_presence_of(:nd_geolocation_id, :type_id)
 
   def as_json(options = {})
     { 
       :id => nd_experiment_id,
-      :type => type_id,
+      :type => self.type.name,
 #      :genotypes => nd_experiment_genotypes.genotype.name,
       :genotypes => genotypes.as_json,
-#      :phenotypes => nd_experiment_phenotypes.phenotype.name,
+      :geolocation => nd_geolocation.as_json,
       :phenotypes => phenotypes.as_json,
 #      :stocks => stocks.as_json
     }

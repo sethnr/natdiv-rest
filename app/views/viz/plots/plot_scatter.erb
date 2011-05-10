@@ -9,11 +9,12 @@
   <script type="text/javascript+protovis">
     
 
-    var xstring = "phenotypes:cvalue!=undefined->cvalue.name";
+    var xstring = "experiments:type==\'field collection\'->geolocation->latitude";
+    var ystring = "experiments:type==\'field collection\'->geolocation->longitude";
+    var zstring = "experiments:type==\'genotype assay\'->genotypes[0]->name";
+
 //    var xstring = "phenotypes:value>=0->value";
 //    var ystring = "phenotypes:cvalue!=undefined->cvalue.name";
-    var ystring = "phenotypes:value>=0->value";
-    var zstring = "phenotypes:cvalue!=undefined->cvalue.name";
 
     var w = 500;  var h = 400;
 
