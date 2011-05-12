@@ -1,0 +1,152 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "plot_bubble" -%>
+<% end %>
+
+  <div id="fig" style="width:500px;height:500px">&nbsp;</div>
+
+
+  <script type="text/javascript+protovis">
+
+    
+var crimes = [
+  { id: "09-900792", code: "Th", date: "2009-03-20T00:00:00-07:00", lat: 37.8, lon: -122.2 },
+  { id: "09-020138", code: "SA", date: "2009-03-20T00:00:00-07:00", lat: 37.8, lon: -122.3 },
+  { id: "09-900795", code: "Th", date: "2009-03-20T00:00:00-07:00", lat: 37.8, lon: -122.4 },
+  { id: "09-020618", code: "Bu", date: "2009-03-20T00:00:00-07:00", lat: 37.9, lon: -122.2 },
+  { id: "09-020141", code: "Va", date: "2009-03-19T23:30:00-07:00", lat: 37.9, lon: -122.3 },
+  { id: "09-020124", code: "SA", date: "2009-03-19T23:09:00-07:00", lat: 37.9, lon: -122.4 },
+  { id: "09-020170", code: "Ro", date: "2009-03-19T23:00:00-07:00", lat: 37.7, lon: -122.2 },
+  { id: "09-020118", code: "SA", date: "2009-03-19T22:30:00-07:00", lat: 37.7, lon: -122.3 },
+  { id: "09-900806", code: "Th", date: "2009-03-19T22:30:00-07:00", lat: 37.7, lon: -122.4 },
+];
+
+var codes = [
+  { code: "Ro", name: "Robbery", category: "violent" },
+  { code: "SA", name: "Simple Assault", category: "violent" },
+  { code: "Bu", name: "Burglary", category: "property" },
+  { code: "Th", name: "Theft", category: "property" },
+  { code: "Va", name: "Vandalism", category: "property" },
+];
+
+
+
+
+    var ystring = "phenotypes:value>=0->value";
+    var xstring = "phenotypes:cvalue!=undefined->cvalue.name";
+    var zstring = "phenotypes:cvalue!=undefined->cvalue.name";
+
+ 
+
+    var data = '<%= @associations.to_s%>'.evalJSON();
+
+    
+var colors = {
+  violent: { light: "rgba(217, 0, 0, .8)", dark: "rgb(163, 0, 0)" },
+  property: { light: "rgba(35, 150, 94, .8)", dark: "rgb(26, 112, 70)" },
+  quality: { light: "rgba(52, 137, 186, .8)", dark: "rgb(39, 103, 139)" },
+};
+ 
+codes.forEach(function(x) colors[x.code] = colors[x.category]);
+ 
+	  	function Canvas(crimes, map){
+			this.crimes = crimes;
+			this.map = map;
+			this.setMap(map);
+		}
+ 
+		
+		Canvas.prototype = pv.extend(google.maps.OverlayView);
+ 		// Canvas.prototype = pv.extend(GOverlay);
+		// Canvas.prototype = pv.extend(OverlayView);
+		
+		Canvas.prototype.onAdd = function(){
+			this.canvas = document.createElement("div");
+		  	this.canvas.setAttribute("class", "canvas");
+		  	this.canvas.setAttribute("id", "canvas1");
+			this.canvas.style.position="absolute";
+
+			this.getPanes().mapPane.appendChild(this.canvas);
+		}
+		
+		Canvas.prototype.draw = function(){
+			var m = this.map;
+			var c = this.canvas;
+			var r = 20;
+			
+			var projection = this.getProjection();
+		
+		  	var pixels = this.crimes.map(function(d) {
+			    var ll = new google.maps.LatLng(d.lat, d.lon);
+			    
+		      	    return projection.fromLatLngToDivPixel(ll);
+			    });	    
+				
+			function x(p) p.x; function y(p) p.y;
+
+			  pv.max(pixels, y) + r
+
+			  var x = { min: pv.min(pixels, x) - r, max: pv.max(pixels, x) + r };
+			  var y = { min: pv.min(pixels, y) - r, max: pv.max(pixels, y) + r };
+			  c.style.width = (x.max - x.min) + "px";
+			  c.style.height = (y.max - y.min) + "px";
+			  c.style.left = x.min + "px";
+			  c.style.top = y.min + "px";
+			
+			alert("x = "+x.min+"->"+x.max+"\n"+"y = "+y.min+"->"+y.max+
+				 "\nwidth = "+c.style.width+
+			  	 "\nheight = "+c.style.height+
+			  	 "\nleft = "+c.style.left+
+			  	 "\ntop = "+c.style.top
+			  	 );		
+
+			new pv.Panel()
+			      .canvas(c)
+			      .left(-x.min)
+			      .top(-y.min)
+			    .add(pv.Panel)
+			      .data(this.crimes)
+			    .add(pv.Dot)
+			      .left(function() pixels[this.parent.index].x)
+			      .top(function() pixels[this.parent.index].y)
+			      .strokeStyle(function(x, d) colors[d.code].dark)
+			      .fillStyle(function(x, d) colors[d.code].light)
+			      .size(140)
+			    .anchor("center").add(pv.Label)
+			      .textStyle("white")
+			      .text(function(x, d) d.code)
+			    .root.render();
+			
+		}
+		//add the map
+		var myOptions = {
+      		zoom: 12,
+	      	center: new google.maps.LatLng(37.78, -122.22),
+	      	mapTypeId: google.maps.MapTypeId.SATELLITE
+	    };
+	    var map = new google.maps.Map(document.getElementById("fig"),
+	        myOptions);
+		//add the overlay canvas
+		var overlay = new Canvas(crimes, map);
+ 
+
+
+    
+/*
+    var data;
+    new Ajax.Request('http://localhost:3000/project/2.json', {
+    	method:'get',
+  	requestHeaders: {Accept: 'application/json'},
+  	onSuccess: function(transport){
+    	    data = transport.responseText.evalJSON();
+  	    alert(data.experiments.collect(function(d) {return nodeFromArray(d.phenotypes, xselect).cvalue.name}).uniq());
+	}
+	});
+
+*/
+
+
+    </script>
+
+
+
+

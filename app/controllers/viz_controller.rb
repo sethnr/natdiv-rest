@@ -54,6 +54,13 @@ class VizController < ApplicationController
     render :action => 'plots/plot_matrix'
   end 
 
+  def plot_geo
+    pieces = params[:id].split(":")
+    @project = Project.find(pieces[0])
+    @associations = ActiveSupport::JSON.encode(@project)
+    render :action => 'plots/plot_geolocation'
+  end 
+
   def project_tree
     pieces = params[:id].split(":")
     @project = Project.find(pieces[0])
