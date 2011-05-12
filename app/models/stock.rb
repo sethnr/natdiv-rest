@@ -23,8 +23,10 @@ class Stock < ActiveRecord::Base
     {
       :name => name,
       :uniquename => uniquename,
-      :experiments => nd_experiments.as_json,
-      :type => type_id
+      :type => type_id,
+      :spp => organism.genus+" "+organism.species,
+      :props => stockprops.as_json,
+      :experiments => nd_experiments.as_json
     }
   end
   

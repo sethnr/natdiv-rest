@@ -93,7 +93,7 @@ function jitter(data, space) {
    if no selection method is provided, should be a single value, NOT array
    the array will be built with one value per nd_experiment object (to be changed to sample object when data allows)  */ 
 function findVals (valString, data) {
-//    alert(valString)
+    //   alert(valString)
   var objectPath = valString.split("->");
   catchString = "data.stocks";
   for (var i=0; i<objectPath.length;i++) {
@@ -105,9 +105,9 @@ function findVals (valString, data) {
     else
       catchString = catchString.concat(".collect(function(d) {return d.",objectType,"})");
   }
-  alert(catchString);
+//  alert(catchString);
   var myVals = eval(catchString);
-  alert(myVals.length+"\n"+myVals);
+//  alert(myVals.length+"\n"+myVals);
   return myVals;
 }
 
