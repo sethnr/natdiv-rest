@@ -1,4 +1,398 @@
-/* traverse (any) json object to find nodes of a particular type */
+/**
+ * A cluster that contains markers.
+ *
+ * @param {MarkerClusterer} markerClusterer The markerclusterer that this
+ *     cluster is associated with.
+ * @constructor
+ * @ignore
+ */
+function Cluster(geoplot) {
+  this.geoplot_ = geoplot;
+  this.map_ = geoplot.getMap();
+  this.sizeFactor_ = 3;
+  this.center_ = null;
+  this.markers_ = [];
+  this.bounds_ = null;
+  this.projection_ = geoplot.getProjection();;
+}
+
+/**
+ * Determins if a marker is already added to the cluster.
+ *
+ * @param {google.maps.Marker} marker The marker to check.
+ * @return {boolean} True if the marker is already added.
+ */
+Cluster.prototype.addPVMark = function(panel, z) {
+    var mark;
+    var c = this;
+    var markers = this.getMarkers();
+    var comp = this.getComposition();
+    if(this.getPxSize() < 20) {
+//	alert(markers.length+" "+this.getPxSize());
+	var bgMark = panel.add(pv.Dot)
+	    .left(this.getPxX())
+	    .top(this.getPxY())
+	    .strokeStyle(pv.color("#aaa").alpha(0.4))
+	    .fillStyle(pv.color("#aaa").alpha(0.5))
+	    .radius(10)
+	    .cursor("pointer")
+	    .def("active",false)
+	    .event("click", function() {c.clustPop()})
+    ;
+
+    }
+
+    if(comp.length == 1) {
+	mark = panel.add(pv.Dot);
+
+	mark.left(this.getPxX())
+	.top(this.getPxY())
+	.strokeStyle(z(comp[0].z))
+	.fillStyle(z(comp[0].z).alpha(0.8))
+	.radius(this.getPxSize() / 2)
+	.cursor("pointer").event("click", function() {c.clustPop()})
+	.anchor("center")
+	.add(pv.Label)
+	.textStyle("white")
+	.text(this.getSize()+" "+comp[0].z);
+    }
+    else {
+	mark = panel.add(pv.Panel);
+	mark
+	.left(this.getPxX())
+	.top(this.getPxY())
+	.add(pv.Wedge)
+	.cursor("pointer")
+	.data(comp)
+	.angle(function(d) {return (d.points.length / markers.length * 2 * Math.PI)})
+	.left(0)
+	.fillStyle(function(d) {return z(d.z).alpha(0.8)})
+	.strokeStyle("gray")
+	.top(0)
+	.outerRadius(this.getPxSize()/2)
+	.anchor("center").add(pv.Label).textAngle(0)
+	.textStyle("white").cursor("pointer")
+	.text(function(d) {return d.points.length+" "+d.z});
+
+    }
+
+    mark
+    .def("active",false)
+    .cursor("pointer")
+    .event("click", function() {c.clustPop()})
+    ;
+    
+
+    //add popup panel
+    popM = mark
+    .add(pv.Panel)
+    .left(this.getPxX())
+    .top(this.getPxY())
+    .width(100).height(100)
+    .fillStyle(pv.color("#fff").alpha(0.5))
+    .strokeStyle("grey")
+//    .visible(function() {return this.parent.active()})
+    .visible(true)
+    ;
+
+    //add dots
+    popM.add(pv.Dot)
+    .data(markers)
+    .radius(5)
+//    .visible(function() this.parent.active())
+    .left(function(d) {/*console.log(this.parent.index+" "+this.index);*/ return ((this.index % 10)+1) * 15})
+    .top(function(d) {return Math.floor(((this.index) / 10) + 1) * 15})
+    .fillStyle(function(d) {return z(d.z)})
+    .strokeStyle(function(d) {return z(d.z)})
+    .cursor("pointer").event("click",function(d) {console.log("clicked "+d.z);})
+    ; 
+//    console.log("popM="+popM.data.length+"\tmark="+mark.data.length);
+
+//    console.log(mark+" "+mark.type+"\t"+popM+" "+popM.type);    
+    return mark;
+}
+
+/**
+ * spawn popup menu for cluster.
+ *
+ * @return {boolean} True if the marker is already added.
+ */
+Cluster.prototype.clustPop = function() {
+    console.log("clusterPop");
+}
+
+
+/**
+ * Determins if a marker is already added to the cluster.
+ *
+ * @param {google.maps.Marker} marker The marker to check.
+ * @return {boolean} True if the marker is already added.
+ */
+Cluster.prototype.isMarkerAlreadyAdded = function(marker) {
+  if (this.markers_.indexOf) {
+    return this.markers_.indexOf(marker) != -1;
+  } else {
+    for (var i = 0, m; m = this.markers_[i]; i++) {
+      if (m == marker) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+
+
+/**
+ * Add a marker to the cluster.
+ *
+ * @param {google.maps.Marker} marker The marker to add.
+ * @return {boolean} True if the marker was added.
+ */
+Cluster.prototype.addMarker = function(marker) {
+  if (this.isMarkerAlreadyAdded(marker)) {
+    return false;
+  }
+
+  if (!this.center_) {
+    this.center_ = new google.maps.LatLng(marker.x, marker.y);
+  } 
+  else {    
+    if (this.averageCenter_) {
+      var l = this.markers_.length + 1;
+      var lat = (this.center_.lat() * (l-1) + marker.x) / l;
+      var lng = (this.center_.lng() * (l-1) + marker.y) / l;
+      this.center_ = new google.maps.LatLng(lat, lng);
+    }
+  }
+
+  marker.isAdded = true;
+  this.markers_.push(marker);
+  this.calculateBounds_();
+
+  return true;
+};
+
+
+/**
+ * Returns the marker clusterer that the cluster is associated with.
+ *
+ * @return {MarkerClusterer} The associated marker clusterer.
+ */
+Cluster.prototype.getGeoplot = function() {
+  return this.geoplot_;
+};
+
+
+/**
+ * Returns the bounds of the cluster.
+ *
+ * @return {google.maps.LatLngBounds} the cluster bounds.
+ */
+Cluster.prototype.getBounds = function() {
+    if (!this.bounds_) {
+	this.calculateBounds_(); }
+    return this.bounds_();
+};
+
+
+/**
+ * Removes the cluster
+ */
+Cluster.prototype.remove = function() {
+  this.clusterIcon_.remove();
+  this.markers_.length = 0;
+  delete this.markers_;
+};
+
+
+/**
+ * Returns the composition of the cluster
+ *
+ * @return {string} single z val, or 'mixed'
+ */
+Cluster.prototype.getComposition = function() {
+    var markers = this.markers_;
+    var zs = markers.collect(function(d) {return d.z}).uniq();
+    zs = zs.map(function(d) {return {z: d, points: markers.findAll(function(e) {return e.z == d;})}});
+    return zs;
+//    if(zs.length ==1) {return zs[0];}
+//    else {return "mixed";}
+};
+
+
+/**
+ * Returns the center of the cluster.
+ *
+ * @return {Array.<google.maps.Marker>} The cluster center.
+ */
+Cluster.prototype.getMarkers = function() {
+  return this.markers_;
+};
+
+
+/**
+ * Returns the center of the cluster.
+ *
+ * @return {google.maps.LatLng} The cluster center.
+ */
+Cluster.prototype.getCenter = function() {
+  return this.center_;
+};
+
+/**
+ * return pixel position for center of map
+ * @return {real} .
+ */
+Cluster.prototype.getPxX = function() {
+    return this.projection_.fromLatLngToDivPixel(this.center_).x;
+}
+
+/**
+ * return pixel position for center of map
+ * @return {real} .
+ */
+Cluster.prototype.getPxY = function() {
+    return this.projection_.fromLatLngToDivPixel(this.center_).y;
+}
+
+
+/**
+ * Calculated the extended bounds of the cluster with the grid.
+ *
+ * @private
+ */
+Cluster.prototype.calculateBounds_ = function() {
+  var bounds = new google.maps.LatLngBounds(this.center_, this.center_);
+
+//  var projection = this.getGeoplot().getProjection();
+  var projection = this.projection_;
+
+  // Turn the bounds into latlng.
+  var tr = new google.maps.LatLng(bounds.getNorthEast().lat(),
+      bounds.getNorthEast().lng());
+  var bl = new google.maps.LatLng(bounds.getSouthWest().lat(),
+      bounds.getSouthWest().lng());
+
+  // Convert the points to pixels and the extend out by the grid size.
+  var trPix = projection.fromLatLngToDivPixel(tr);
+  var spotSize = this.getPxSize();
+  trPix.x += spotSize/2;
+  trPix.y -= spotSize/2;
+
+  var blPix = projection.fromLatLngToDivPixel(bl);
+  blPix.x -= spotSize/2;
+  blPix.y += spotSize/2;
+
+  // Convert the pixel points back to LatLng
+  var ne = projection.fromDivPixelToLatLng(trPix);
+  var sw = projection.fromDivPixelToLatLng(blPix);
+
+  // Extend the bounds to contain the new bounds.
+  bounds.extend(ne);
+  bounds.extend(sw);
+  this.bounds_ = bounds;
+  return bounds;
+};
+
+Cluster.prototype.getPxSize = function() {
+      return this.markers_.length * this.sizeFactor_;
+}
+
+Cluster.prototype.getSize = function() {
+      return this.markers_.length;
+}
+
+/**
+ * Determines if a marker lies in the clusters bounds.
+ *
+ * @param {google.maps.LatLon} marker The marker to check.
+ * @return {boolean} True if the marker lies in the bounds.
+ */
+Cluster.prototype.isPosInClusterBounds = function(pos) {
+  var contains = this.bounds_.contains(pos);
+//  alert(this.bounds_+" contains "+pos+" = "+contains);
+  return contains;
+};
+
+
+/**
+ * Returns the map that the cluster is associated with.
+ *
+ * @return {google.maps.Map} The map.
+ */
+Cluster.prototype.getMap = function() {
+  return this.map_;
+};
+
+
+/**
+ * A ClusteredSet that contains clusters and markers.
+ *
+ * @param {MarkerClusterer} markerClusterer The markerclusterer that this
+ *     cluster is associated with.
+ * @constructor
+ * @ignore
+ */
+function ClusterSet(geoplot, data) {
+  this.geoplot_ = geoplot;
+  this.data_ = data;
+  this.map_ = geoplot.getMap();
+  this.sizeFactor_ = 5;
+
+  this.clusters_ = [];
+  this.makeClusters_();
+}
+
+/**
+ * return clusters
+ * @private
+ */
+ClusterSet.prototype.getClusters = function() {
+    return this.clusters_;
+}
+
+/**
+ * cycle through points in data_, add overlaps into clusters
+ * datum = {x: lat, y: lon, z: var}
+ * @private
+ */
+ClusterSet.prototype.makeClusters_ = function() {
+    this.clusters_ = [];
+    for(var i=0; i< this.data_.length; i++) {
+	var datum = this.data_[i];
+	// alert(datum+", "+this.data_.length);
+	this.addMarker(datum);
+    }
+}
+
+
+/**
+ * Add a marker to a cluster, or creates a new cluster.
+ *
+ * @param {??} marker The marker to add.
+ * @private
+ */
+ClusterSet.prototype.addMarker = function(marker) {
+  var pos = new google.maps.LatLng(marker.x, marker.y);
+//  alert(marker.x+" "+marker.y+"\t"+pos);
+
+  clustersAdded = 0;
+  for(var i=0; i< this.clusters_.length; i++) {
+	var cluster = this.clusters_[i];
+	// alert(i+" "+cluster.isPosInClusterBounds(pos));
+	if(cluster.isPosInClusterBounds(pos)) {
+	    cluster.addMarker(marker);
+	    clustersAdded++;
+	    break;
+	}
+  }
+  if(clustersAdded < 1) {
+      var cluster = new Cluster(this.geoplot_);
+      cluster.addMarker(marker);
+      this.clusters_.push(cluster);
+  }
+}/* traverse (any) json object to find nodes of a particular type */
 function nodeFromArray(objects, catchString) {
     for (var i = 0; i < objects.length; i++) {
 	if (eval('objects[i].'+catchString)) { return objects[i];}
@@ -112,6 +506,8 @@ function findVals (valString, data) {
 }
 
 /* make 3-dim data structure for plotting */
+/* to be replaced with getDataHash_map method (i.e. separate position grid from value grid - only used foor scatter plot jittering */
+
 function getDataHash (x, xvals, y, yvals, z, zvals) {
   var valHash = new Hash();
   valHash.set("X",xvals);
@@ -470,41 +866,90 @@ function getDataHash_map (xstring, ystring, zstring) {
       return {x: xval,  
 	     y: yval, 
 	     z: zval
-	  }},valHash);
+	      /* obj: jsonobject */
+	      }},valHash);
   
   dataHash.sortBy(function(d) {return Number(d.y)});
   return dataHash;
 }
- 
+
+
 function geoplot(posHash, mapDiv) {
- 
+
+
     function Canvas(mapPoints, map){
 	this.mapPoints = mapPoints;
 	this.map = map;
+
+	var bounds = this.getBounds(mapPoints, 0.05);
+	map.fitBounds(bounds);
+
 	this.setMap(map);
+	this.panel_ = new pv.Panel().overflow("visible");
+
+//	this.z = pv.Colors.category10();
+	return this;
     }
-    		
+    
     Canvas.prototype = pv.extend(google.maps.OverlayView);
-    var z = pv.Colors.category10();
     
     Canvas.prototype.onAdd = function(){
 	this.canvas = document.createElement("div");
 	this.canvas.setAttribute("class", "canvas");
 	this.canvas.style.position="absolute";
 	
-	this.getPanes().mapPane.appendChild(this.canvas);
+	var pane = this.getPanes().overlayMouseTarget;
+	
+	pane.appendChild(this.canvas);
+
     }
     
+    Canvas.prototype.getMap = function(){
+	return this.map;
+    }
+
+    Canvas.prototype.getBounds = function(pointsHash, margin) {
+	var b = pv.min(pointsHash, function(d) {return d.y});
+	var l = pv.min(pointsHash, function(d) {return d.x});
+	var t = pv.max(pointsHash, function(d) {return d.y});
+	var r = pv.max(pointsHash, function(d) {return d.x});
+	var mar = 0;
+	if(margin >= 0) {mar = margin;}
+	var wmar = (r-l)*mar;
+	var hmar = (t-b)*mar;
+	
+	var myBounds = new google.maps.LatLngBounds(new google.maps.LatLng(l-wmar,b-hmar),
+				      new google.maps.LatLng(r+wmar,t+hmar));
+	return myBounds;
+    }
+
+    Canvas.prototype.getPanel = function(){
+	return this.panel_;
+    }
+   
+    Canvas.prototype.setPanel = function(newPanel){
+	this.panel_ = newPanel;
+    }
+   
     Canvas.prototype.draw = function(){
+	
 	var m = this.map;
 	var c = this.canvas;
-	var r = 20;
+	var r = 200;
+	var z = pv.Colors.category10();
 	
 	var projection = this.getProjection();
 	
+	var cSet = new ClusterSet(this, this.mapPoints);
+	var clusters = cSet.getClusters();
+
+//	for(var ci=0; ci<clusters.length && ci < 6; ci++) {
+//	    alert(ci+" "+clusters[ci].markers_.length);
+//	}
+	
+
 	var pixels = this.mapPoints.map(function(d) {
 		var ll = new google.maps.LatLng(d.x, d.y);
-		
 		return projection.fromLatLngToDivPixel(ll);
 	    });	    
 	
@@ -514,24 +959,21 @@ function geoplot(posHash, mapDiv) {
 	
 	var x = { min: pv.min(pixels, x) - r, max: pv.max(pixels, x) + r };
 	var y = { min: pv.min(pixels, y) - r, max: pv.max(pixels, y) + r };
+
 	c.style.width = (x.max - x.min) + "px";
 	c.style.height = (y.max - y.min) + "px";
 	c.style.left = x.min + "px";
 	c.style.top = y.min + "px";
-	
-	/*	alert("x = "+x.min+"->"+x.max+"\n"+"y = "+y.min+"->"+y.max+
-		"\nwidth = "+c.style.width+
-		"\nheight = "+c.style.height+
-		"\nleft = "+c.style.left+
-		"\ntop = "+c.style.top
-		);		
-	*/
-	new pv.Panel()
+
+	var mapPanel = new pv.Panel();
+
+/*
+	mapPanel
 	.canvas(c)
 	.left(-x.min)
 	.top(-y.min)
 	.add(pv.Panel)
-	.data(this.mapPoints)
+	.data(this.mapPoints)	
 	.add(pv.Dot)
 	.left(function() {return pixels[this.parent.index].x})
 	.top(function() {return pixels[this.parent.index].y})
@@ -540,21 +982,52 @@ function geoplot(posHash, mapDiv) {
 	.size(140)
 	.anchor("center").add(pv.Label)
 	.textStyle("white")
-	.text(function(x, d) {return d.z})
-	.root.render();
+	.text(function(x, d) {return d.z});
+*/
+
+
+	var subPanel = mapPanel
+	.canvas(c)
+	.left(-x.min)
+	.top(-y.min)
+	.add(pv.Panel)
+;
+
+//	mapPanel.strokeStyle("blue");
+	for (var i=0; i< clusters.length; i++) {
+	    clusters[i].addPVMark(mapPanel, z); 
+	}
 	
+	mapPanel.root.render();
+/*
+alert(myData.root.children.length+"\n"+
+      myData.root.children[0].children.length+"\n"+
+      myData.root.children[0].children[0].children+"\n"+
+      myData.root.children[0].children[1].children+"\n"
+
+    );
+*/	
+	
+//	return mapPanel;
+	mapPanel.root.render();
+
     }
     //add the map
     var myOptions = {
-    zoom: 7,
-    center: new google.maps.LatLng(12.8, -8.05),
+//    zoom: 7,
+//    center: new google.maps.LatLng(12.8, -8.05),
     mapTypeId: google.maps.MapTypeId.TERRAIN
     };
-    var map = new google.maps.Map(document.getElementById("fig"),
+//    var map = new google.maps.Map(document.getElementById("fig"),
+    var map = new google.maps.Map(mapDiv,
 				  myOptions);
     //add the overlay canvas
-    var overlay = new Canvas(posHash, map);
-    return overlay;
+    var geoverlay = new Canvas(posHash, map);
+
+
+    
+    return geoverlay;
     
 }
     
+//geoplot.prototype
