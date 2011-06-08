@@ -1,15 +1,14 @@
 /**
  * A cluster that contains markers.
  *
- * @param {MarkerClusterer} markerClusterer The markerclusterer that this
- *     cluster is associated with.
+ * @param {geoplot} the geoplot that this
+ *     cluster will be placed on.
  * @constructor
- * @ignore
  */
 function Cluster(geoplot) {
   this.geoplot_ = geoplot;
   this.map_ = geoplot.getMap();
-  this.sizeFactor_ = 3;
+  this.markerSize_;
   this.center_ = null;
   this.markers_ = [];
   this.bounds_ = null;
@@ -17,27 +16,26 @@ function Cluster(geoplot) {
 }
 
 /**
- * Determins if a marker is already added to the cluster.
- *
- * @param {google.maps.Marker} marker The marker to check.
- * @return {boolean} True if the marker is already added.
+ * add protovis visualisation for this cluster - dependent on size and composition
+ * defaults to pie chart
+ * @param {panel, z} pv.Panel to which will be added + z-scale for colouring.
+ * @return {pv.Mark} the mark class
  */
 Cluster.prototype.addPVMark = function(panel, z) {
     var mark;
     var c = this;
     var markers = this.getMarkers();
     var comp = this.getComposition();
+    var dotSize = this.markerSize_;
+
     if(this.getPxSize() < 20) {
-//	alert(markers.length+" "+this.getPxSize());
 	var bgMark = panel.add(pv.Dot)
 	    .left(this.getPxX())
 	    .top(this.getPxY())
 	    .strokeStyle(pv.color("#aaa").alpha(0.4))
 	    .fillStyle(pv.color("#aaa").alpha(0.5))
 	    .radius(10)
-	    .cursor("pointer")
-	    .def("active",false)
-	    .event("click", function() {c.clustPop()})
+	    .cursor("pointer").event("click", function() {c.popUp()})
     ;
 
     }
@@ -49,8 +47,8 @@ Cluster.prototype.addPVMark = function(panel, z) {
 	.top(this.getPxY())
 	.strokeStyle(z(comp[0].z))
 	.fillStyle(z(comp[0].z).alpha(0.8))
-	.radius(this.getPxSize() / 2)
-	.cursor("pointer").event("click", function() {c.clustPop()})
+	.radius(this.getPxSize()/2)
+	.cursor("pointer").event("click", function() {c.popUp()})
 	.anchor("center")
 	.add(pv.Label)
 	.textStyle("white")
@@ -65,67 +63,70 @@ Cluster.prototype.addPVMark = function(panel, z) {
 	.cursor("pointer")
 	.data(comp)
 	.angle(function(d) {return (d.points.length / markers.length * 2 * Math.PI)})
-	.left(0)
 	.fillStyle(function(d) {return z(d.z).alpha(0.8)})
 	.strokeStyle("gray")
-	.top(0)
 	.outerRadius(this.getPxSize()/2)
 	.anchor("center").add(pv.Label).textAngle(0)
 	.textStyle("white").cursor("pointer")
-	.text(function(d) {return d.points.length+" "+d.z});
+	.text(function(d) {return d.points.length /*+" "+d.z*/});
 
     }
 
-    mark
-    .def("active",false)
-    .cursor("pointer")
-    .event("click", function() {c.clustPop()})
+    mark.
+    cursor("pointer").
+    event("click", function() {c.popUp()})
     ;
     
 
+    var sqrt = Math.ceil(Math.sqrt(c.getSize()));
+//    console.log(sqrt+" x "+dotSize);
+
     //add popup panel
-    popM = mark
-    .add(pv.Panel)
-    .left(this.getPxX())
+    this.popup_ = panel
+    .add(pv.Panel);
+    this.popup_.left(this.getPxX())
     .top(this.getPxY())
-    .width(100).height(100)
+    .width((sqrt+1)*dotSize*3)
+    .height((sqrt+1)*dotSize*3)
     .fillStyle(pv.color("#fff").alpha(0.5))
     .strokeStyle("grey")
-//    .visible(function() {return this.parent.active()})
-    .visible(true)
-    ;
-
-    //add dots
-    popM.add(pv.Dot)
+    .add(pv.Dot)
     .data(markers)
-    .radius(5)
-//    .visible(function() this.parent.active())
-    .left(function(d) {/*console.log(this.parent.index+" "+this.index);*/ return ((this.index % 10)+1) * 15})
-    .top(function(d) {return Math.floor(((this.index) / 10) + 1) * 15})
+    .radius(dotSize)
+    .left(function(d) {return ((this.index % sqrt)+1) * dotSize * 3 })
+    .top(function(d) {return Math.floor(((this.index) / sqrt) + 1) * dotSize * 3})
     .fillStyle(function(d) {return z(d.z)})
     .strokeStyle(function(d) {return z(d.z)})
     .cursor("pointer").event("click",function(d) {console.log("clicked "+d.z);})
     ; 
-//    console.log("popM="+popM.data.length+"\tmark="+mark.data.length);
 
-//    console.log(mark+" "+mark.type+"\t"+popM+" "+popM.type);    
+   this.popup_
+    .def("active", false)
+    .visible(function() {return this.active()})
+    ;
+
     return mark;
 }
 
 /**
  * spawn popup menu for cluster.
- *
- * @return {boolean} True if the marker is already added.
  */
-Cluster.prototype.clustPop = function() {
-    console.log("clusterPop");
+Cluster.prototype.popUp = function() {
+    this.geoplot_.closePops();
+    this.popup_.active(true).render();
+}
+/**
+ * close popup menu for cluster
+ */
+Cluster.prototype.popDown = function() {
+    this.popup_.active(false).render();
 }
 
 
 /**
  * Determins if a marker is already added to the cluster.
  *
- * @param {google.maps.Marker} marker The marker to check.
+ * @param {dataObject} marker The marker to check.
  * @return {boolean} True if the marker is already added.
  */
 Cluster.prototype.isMarkerAlreadyAdded = function(marker) {
@@ -146,7 +147,7 @@ Cluster.prototype.isMarkerAlreadyAdded = function(marker) {
 /**
  * Add a marker to the cluster.
  *
- * @param {google.maps.Marker} marker The marker to add.
+ * @param {dataMarker} marker The marker to add.
  * @return {boolean} True if the marker was added.
  */
 Cluster.prototype.addMarker = function(marker) {
@@ -175,9 +176,9 @@ Cluster.prototype.addMarker = function(marker) {
 
 
 /**
- * Returns the marker clusterer that the cluster is associated with.
+ * Returns the geoplot that the cluster is associated with.
  *
- * @return {MarkerClusterer} The associated marker clusterer.
+ * @return {geoplot} The associated marker clusterer.
  */
 Cluster.prototype.getGeoplot = function() {
   return this.geoplot_;
@@ -209,7 +210,7 @@ Cluster.prototype.remove = function() {
 /**
  * Returns the composition of the cluster
  *
- * @return {string} single z val, or 'mixed'
+ * @return {array of objects {z: [distinct] z-value; obj: data objects}}'
  */
 Cluster.prototype.getComposition = function() {
     var markers = this.markers_;
@@ -222,9 +223,9 @@ Cluster.prototype.getComposition = function() {
 
 
 /**
- * Returns the center of the cluster.
+ * Returns all markers.
  *
- * @return {Array.<google.maps.Marker>} The cluster center.
+ * @return {[]} array of data objects.
  */
 Cluster.prototype.getMarkers = function() {
   return this.markers_;
@@ -296,11 +297,21 @@ Cluster.prototype.calculateBounds_ = function() {
 };
 
 Cluster.prototype.getPxSize = function() {
-      return this.markers_.length * this.sizeFactor_;
+//    console.log(this.markers_.length+" "+Math.sqrt((this.markers_.length / Math.PI)));
+    var area = Math.sqrt((this.markers_.length / Math.PI));
+    var sizeFactor = this.markerSize_ / (Math.sqrt(1/Math.PI));
+//    console.log(this.markers_.length+": "+area+" x "+sizeFactor+" = "+(area*sizeFactor));
+    return area * sizeFactor * 2;
+    //return this.markers_.length * this.sizeFactor_;
+
 }
 
 Cluster.prototype.getSize = function() {
       return this.markers_.length;
+}
+
+Cluster.prototype.setMarkerSize = function(size) {
+      this.markerSize_ = size;
 }
 
 /**
@@ -338,7 +349,7 @@ function ClusterSet(geoplot, data) {
   this.geoplot_ = geoplot;
   this.data_ = data;
   this.map_ = geoplot.getMap();
-  this.sizeFactor_ = 5;
+  this.markerSize_ = 5;
 
   this.clusters_ = [];
   this.makeClusters_();
@@ -375,12 +386,10 @@ ClusterSet.prototype.makeClusters_ = function() {
  */
 ClusterSet.prototype.addMarker = function(marker) {
   var pos = new google.maps.LatLng(marker.x, marker.y);
-//  alert(marker.x+" "+marker.y+"\t"+pos);
 
   clustersAdded = 0;
   for(var i=0; i< this.clusters_.length; i++) {
 	var cluster = this.clusters_[i];
-	// alert(i+" "+cluster.isPosInClusterBounds(pos));
 	if(cluster.isPosInClusterBounds(pos)) {
 	    cluster.addMarker(marker);
 	    clustersAdded++;
@@ -389,10 +398,12 @@ ClusterSet.prototype.addMarker = function(marker) {
   }
   if(clustersAdded < 1) {
       var cluster = new Cluster(this.geoplot_);
+      cluster.setMarkerSize(this.markerSize_)
       cluster.addMarker(marker);
       this.clusters_.push(cluster);
   }
-}/* traverse (any) json object to find nodes of a particular type */
+}
+/* traverse (any) json object to find nodes of a particular type */
 function nodeFromArray(objects, catchString) {
     for (var i = 0; i < objects.length; i++) {
 	if (eval('objects[i].'+catchString)) { return objects[i];}
@@ -853,7 +864,44 @@ function frequencyMatrix(data, w, h, xstring, ystring, zstring) {
 }
 
 
-function getDataHash_map (xstring, ystring, zstring) {
+function getDataHash_jsp (json, est, xst, yst, zst) {
+
+  function getVal (json, est, ost, vst) {
+      var estHash = est.split('.');
+      var ostHash = ost.split('[');
+      for (var i = estHash.length; i> 1; i--) {
+	  var esst = estHash.slice(0,i).join(".");
+//	  console.log(esst+" "+vst.indexOf(esst));
+	  if(vst.indexOf(esst) >= 0) {
+	      var osst = ostHash.slice(0,i).join("[");
+	      
+	      var vpth = vst.replace(esst,osst);
+	      var vobj = jsonPath(json,vpth);
+//	      console.log(vpth+"\t"+vobj);
+	      if(vobj.length==1) {return vobj[0];}
+	      else {return vobj};
+	  }
+      }
+      return undefined;
+  }
+
+  var paths = jsonPath(json, est,{resultType:"PATH"});
+  console.log(est+" "+paths.length);
+
+  var dataHash = paths.map(function(d,i) {
+      var retHash =  {x: getVal(json, est, d,xst),  
+		      y: getVal(json, est, d,yst), 
+		      z: getVal(json, est, d,zst),
+		      o: getVal(json, est, d,est)
+      };
+      return retHash;});
+  
+  dataHash.sortBy(function(d) {return Number(d.y)});
+  return dataHash;
+}
+
+
+function getDataHash_map (data,xstring, ystring, zstring) {
   var valHash = new Hash();
   valHash.set("X",findVals(xstring, data));
   valHash.set("Y",findVals(ystring, data));
@@ -883,11 +931,11 @@ function geoplot(posHash, mapDiv) {
 
 	var bounds = this.getBounds(mapPoints, 0.05);
 	map.fitBounds(bounds);
-
+//	google.maps.event.addListener(map, 'click', this.closePops());
 	this.setMap(map);
 	this.panel_ = new pv.Panel().overflow("visible");
-
-//	this.z = pv.Colors.category10();
+	this.clusters_ = [];
+	this.z = pv.Colors.category10();
 	return this;
     }
     
@@ -897,11 +945,13 @@ function geoplot(posHash, mapDiv) {
 	this.canvas = document.createElement("div");
 	this.canvas.setAttribute("class", "canvas");
 	this.canvas.style.position="absolute";
+	var c = this;
+	google.maps.event.addListener(this.getMap(), 'click', function(){c.closePops()});
 	
 	var pane = this.getPanes().overlayMouseTarget;
 	
 	pane.appendChild(this.canvas);
-
+	
     }
     
     Canvas.prototype.getMap = function(){
@@ -936,17 +986,12 @@ function geoplot(posHash, mapDiv) {
 	var m = this.map;
 	var c = this.canvas;
 	var r = 200;
-	var z = pv.Colors.category10();
+	var z = this.z;
 	
 	var projection = this.getProjection();
 	
 	var cSet = new ClusterSet(this, this.mapPoints);
-	var clusters = cSet.getClusters();
-
-//	for(var ci=0; ci<clusters.length && ci < 6; ci++) {
-//	    alert(ci+" "+clusters[ci].markers_.length);
-//	}
-	
+	this.clusters_ = cSet.getClusters();
 
 	var pixels = this.mapPoints.map(function(d) {
 		var ll = new google.maps.LatLng(d.x, d.y);
@@ -954,8 +999,6 @@ function geoplot(posHash, mapDiv) {
 	    });	    
 	
 	function x(p) {return p.x}; function y(p) {return p.y};
-	
-	// pv.max(pixels, y) + r;
 	
 	var x = { min: pv.min(pixels, x) - r, max: pv.max(pixels, x) + r };
 	var y = { min: pv.min(pixels, y) - r, max: pv.max(pixels, y) + r };
@@ -967,58 +1010,32 @@ function geoplot(posHash, mapDiv) {
 
 	var mapPanel = new pv.Panel();
 
-/*
-	mapPanel
-	.canvas(c)
-	.left(-x.min)
-	.top(-y.min)
-	.add(pv.Panel)
-	.data(this.mapPoints)	
-	.add(pv.Dot)
-	.left(function() {return pixels[this.parent.index].x})
-	.top(function() {return pixels[this.parent.index].y})
-	.strokeStyle(function(d) {return z(d.z)})
-	.fillStyle(function(d) {return z(d.z).alpha(.2)})
-	.size(140)
-	.anchor("center").add(pv.Label)
-	.textStyle("white")
-	.text(function(x, d) {return d.z});
-*/
-
-
 	var subPanel = mapPanel
 	.canvas(c)
 	.left(-x.min)
 	.top(-y.min)
 	.add(pv.Panel)
-;
-
-//	mapPanel.strokeStyle("blue");
-	for (var i=0; i< clusters.length; i++) {
-	    clusters[i].addPVMark(mapPanel, z); 
+	;
+	for (var i=0; i< this.clusters_.length; i++) {
+	    this.clusters_[i].addPVMark(mapPanel, z); 
 	}
 	
 	mapPanel.root.render();
-/*
-alert(myData.root.children.length+"\n"+
-      myData.root.children[0].children.length+"\n"+
-      myData.root.children[0].children[0].children+"\n"+
-      myData.root.children[0].children[1].children+"\n"
-
-    );
-*/	
-	
-//	return mapPanel;
-	mapPanel.root.render();
-
     }
+
+    Canvas.prototype.closePops = function() {
+// console.log(this.clusters_);
+	if(this.clusters_) {
+	    for (var i=0; i< this.clusters_.length; i++) {
+		this.clusters_[i].popDown(); 
+	    }
+	}
+    }
+
     //add the map
     var myOptions = {
-//    zoom: 7,
-//    center: new google.maps.LatLng(12.8, -8.05),
     mapTypeId: google.maps.MapTypeId.TERRAIN
     };
-//    var map = new google.maps.Map(document.getElementById("fig"),
     var map = new google.maps.Map(mapDiv,
 				  myOptions);
     //add the overlay canvas
@@ -1029,5 +1046,90 @@ alert(myData.root.children.length+"\n"+
     return geoverlay;
     
 }
-    
-//geoplot.prototype
+    /* JSONPath 0.8.0 - XPath for JSON
+ *
+ * Copyright (c) 2007 Stefan Goessner (goessner.net)
+ * Licensed under the MIT (MIT-LICENSE.txt) licence.
+ */
+function jsonPath(obj, expr, arg) {
+   var P = {
+      resultType: arg && arg.resultType || "VALUE",
+      result: [],
+      normalize: function(expr) {
+         var subx = [];
+         return expr.replace(/[\['](\??\(.*?\))[\]']/g, function($0,$1){return "[#"+(subx.push($1)-1)+"]";})
+                    .replace(/'?\.'?|\['?/g, ";")
+                    .replace(/;;;|;;/g, ";..;")
+                    .replace(/;$|'?\]|'$/g, "")
+                    .replace(/#([0-9]+)/g, function($0,$1){return subx[$1];});
+      },
+      asPath: function(path) {
+         var x = path.split(";"), p = "$";
+         for (var i=1,n=x.length; i<n; i++)
+            p += /^[0-9*]+$/.test(x[i]) ? ("["+x[i]+"]") : ("['"+x[i]+"']");
+         return p;
+      },
+      store: function(p, v) {
+         if (p) P.result[P.result.length] = P.resultType == "PATH" ? P.asPath(p) : v;
+         return !!p;
+      },
+      trace: function(expr, val, path) {
+         if (expr) {
+            var x = expr.split(";"), loc = x.shift();
+            x = x.join(";");
+            if (val && val.hasOwnProperty(loc))
+               P.trace(x, val[loc], path + ";" + loc);
+            else if (loc === "*")
+               P.walk(loc, x, val, path, function(m,l,x,v,p) { P.trace(m+";"+x,v,p); });
+            else if (loc === "..") {
+               P.trace(x, val, path);
+               P.walk(loc, x, val, path, function(m,l,x,v,p) { typeof v[m] === "object" && P.trace("..;"+x,v[m],p+";"+m); });
+            }
+            else if (/,/.test(loc)) { // [name1,name2,...]
+               for (var s=loc.split(/'?,'?/),i=0,n=s.length; i<n; i++)
+                  P.trace(s[i]+";"+x, val, path);
+            }
+            else if (/^\(.*?\)$/.test(loc)) // [(expr)]
+               P.trace(P.eval(loc, val, path.substr(path.lastIndexOf(";")+1))+";"+x, val, path);
+            else if (/^\?\(.*?\)$/.test(loc)) // [?(expr)]
+               P.walk(loc, x, val, path, function(m,l,x,v,p) { if (P.eval(l.replace(/^\?\((.*?)\)$/,"$1"),v[m],m)) P.trace(m+";"+x,v,p); });
+            else if (/^(-?[0-9]*):(-?[0-9]*):?([0-9]*)$/.test(loc)) // [start:end:step]  phyton slice syntax
+               P.slice(loc, x, val, path);
+         }
+         else
+            P.store(path, val);
+      },
+      walk: function(loc, expr, val, path, f) {
+         if (val instanceof Array) {
+            for (var i=0,n=val.length; i<n; i++)
+               if (i in val)
+                  f(i,loc,expr,val,path);
+         }
+         else if (typeof val === "object") {
+            for (var m in val)
+               if (val.hasOwnProperty(m))
+                  f(m,loc,expr,val,path);
+         }
+      },
+      slice: function(loc, expr, val, path) {
+         if (val instanceof Array) {
+            var len=val.length, start=0, end=len, step=1;
+            loc.replace(/^(-?[0-9]*):(-?[0-9]*):?(-?[0-9]*)$/g, function($0,$1,$2,$3){start=parseInt($1||start);end=parseInt($2||end);step=parseInt($3||step);});
+            start = (start < 0) ? Math.max(0,start+len) : Math.min(len,start);
+            end   = (end < 0)   ? Math.max(0,end+len)   : Math.min(len,end);
+            for (var i=start; i<end; i+=step)
+               P.trace(i+";"+expr, val, path);
+         }
+      },
+      eval: function(x, _v, _vname) {
+         try { return $ && _v && eval(x.replace(/@/g, "_v")); }
+         catch(e) { throw new SyntaxError("jsonPath: " + e.message + ": " + x.replace(/@/g, "_v").replace(/\^/g, "_a")); }
+      }
+   };
+
+   var $ = obj;
+   if (expr && obj && (P.resultType == "VALUE" || P.resultType == "PATH")) {
+      P.trace(P.normalize(expr).replace(/^\$;/,""), obj, "$");
+      return P.result.length ? P.result : false;
+   }
+} 
