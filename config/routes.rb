@@ -5,7 +5,11 @@ ActionController::Routing::Routes.draw do |map|
     phenotypes.resources :cvterms
   end
 
-  map.resources :nd_experiment do |ndexperiments|
+  map.resources :nd_experiment, :as => 'experiment' do |ndexperiments|
+    # experiment.resources :cvterms
+  end
+
+  map.resources :stock, do |stock|
     # experiment.resources :cvterms
   end
 
