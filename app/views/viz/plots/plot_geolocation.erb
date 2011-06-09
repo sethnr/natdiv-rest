@@ -43,6 +43,14 @@
     var estring = "$.stocks.*";
 
 
+    var vis = {"type":"geoplot",
+    	      	"x":"$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.latitude",
+    	      	"y":"$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude",
+    		"z":"$.stocks.*.props[?(@.type == 'organism')].value",    
+    		"e":"$.stocks.*"};
+
+
+
 /*
     var xstring = "$.stocks.*.experiments.*.geolocation.latitude";
     var ystring = "$.stocks.*.experiments.*.geolocation.longitude";
@@ -50,7 +58,8 @@
     var estring = "$.stocks.*.experiments.*";
 */
 
-    var hashJSP = getDataHash_jsp(data,estring,xstring,ystring,zstring);
+/*    var hashJSP = getDataHash_jsp(data,estring,xstring,ystring,zstring);*/
+    var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);	
 
     var mapDiv = document.getElementById("fig");
     geoplot(hashJSP, mapDiv);
