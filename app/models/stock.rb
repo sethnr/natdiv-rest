@@ -21,6 +21,7 @@ class Stock < ActiveRecord::Base
 
   def as_json(options = {})
     {
+      :dbid => stock_id,
       :name => name,
       :uniquename => uniquename,
       :type => type_id,
