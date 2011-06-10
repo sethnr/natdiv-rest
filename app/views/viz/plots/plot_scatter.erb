@@ -3,24 +3,26 @@
 <% end %>
 
 <div id="center">
-  <div id="fig">
-
+  <div id="fig" style="width:800px;height:400px">
+  </div>
+  <div>
 
   <script type="text/javascript+protovis">
     
+    var data = '<%= @associations.to_s%>'.evalJSON();   
+    var vis = {"type": "scatter",
+               "x": "$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[?(@.props[0].value == '2R')].description",
+               "y": "$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude",
+               "z": "$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[?(@.props[0].value == '2R')].description",
+               "e": "$.stocks.*",
+               "args": {"jitter":"false"}}
+    var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);
+    var figDiv = document.getElementById("fig");
+    dotplot(hashJSP, figDiv, vis.args);
 
-    var xstring = "experiments:type==\'genotype assay\'->genotypes[0]->name";
-    var ystring = "experiments:type==\'field collection\'->geolocation->longitude";
-    var zstring = "experiments:type==\'genotype assay\'->genotypes[0]->name";
 
-//    var xstring = "phenotypes:value>=0->value";
-//    var ystring = "phenotypes:cvalue!=undefined->cvalue.name";
-//    var zstring = "phenotypes:cvalue!=undefined->cvalue.name";
+  
 
-    var w = 500;  var h = 400;
-
-    var data = '<%= @associations.to_s%>'.evalJSON();
-    dotplot(data, w, h, xstring, ystring, zstring).render();
     
 /*
     var data;

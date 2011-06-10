@@ -8,64 +8,19 @@
   <script type="text/javascript+protovis">
 
 
-/* copied here for fast dev, roll back into core after completion 
-   main function needs scales removing - replace with in-class methods to get positions*/
-
-    
-    var xstring = "experiments:type==\'field collection\'->geolocation->latitude";
-    var ystring = "experiments:type==\'field collection\'->geolocation->longitude";
-    var zstring = "props:type==\'organism\'->value";
-
-
-/*    var zstring = "experiments:type==\'genotype
-    assay\'->genotypes:description==\'AG3H577\'->props:type==\'length\'->value"; */
-/* var zstring = "experiments:type==\'genotype
-    assay\'->genotypes[0]->props:type==\'length\'->value";  */
-
-    
- 
-
     var data = '<%= @associations.to_s%>'.evalJSON();
-    
-
-    var dataHash = getDataHash_map(data,xstring,ystring,zstring);
-/*    var mapDiv = document.getElementById("fig");
-    geoplot(dataHash, mapDiv);
-*/
-
-/* JSONPATH EXPERIMENTALS BELOW */
-
-
-
-    var xstring = "$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.latitude";
-    var ystring = "$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude";
-    var zstring = "$.stocks.*.props[?(@.type == 'organism')].value";    
-    var estring = "$.stocks.*";
-
-
     var vis = {"type":"geoplot",
     	      	"x":"$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.latitude",
     	      	"y":"$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude",
     		"z":"$.stocks.*.props[?(@.type == 'organism')].value",    
-    		"e":"$.stocks.*"};
-
-
-
-/*
-    var xstring = "$.stocks.*.experiments.*.geolocation.latitude";
-    var ystring = "$.stocks.*.experiments.*.geolocation.longitude";
-    var zstring = "$.stocks.*.props[?(@.type == 'organism')].value";    
-    var estring = "$.stocks.*.experiments.*";
-*/
-
-/*    var hashJSP = getDataHash_jsp(data,estring,xstring,ystring,zstring);*/
+    		"e":"$.stocks.*",
+		};
     var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);	
-
     var mapDiv = document.getElementById("fig");
     geoplot(hashJSP, mapDiv);
   
-	console.log(Object.toJSON(dataHash[0]));
-	console.log(Object.toJSON(hashJSP[0]));
+
+	
 	
   
 /*

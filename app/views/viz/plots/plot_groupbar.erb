@@ -3,23 +3,24 @@
 <% end %>
 
 <div id="center">
-  <div id="fig">
+  <div id="fig" style="width:800px;height:400px" >
 
 
   <script type="text/javascript+protovis">
     
+   var data = '<%= @associations.to_s%>'.evalJSON(); 
+   var vis = {"type": "scatter",
+              "x": "$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[?(@.props[0].value == '2R')].description",
+              "y": "$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude",
+              "z": "$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[?(@.props[0].value == '2R')].description",
+              "e": "$.stocks.*",
+              "args": {"yscale":"linear"}}
+   var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);
+   var figDiv = document.getElementById("fig");
+   groupedBarChart(hashJSP,figDiv,vis.args);
 
-//    var xstring = "phenotypes:value>=0->value";
-//    var ystring = "phenotypes:cvalue!=undefined->cvalue.name";
-    var ystring = "phenotypes:value>=0->value";
-    var xstring = "phenotypes:cvalue!=undefined->cvalue.name";
-//    var zstring = "id";
-      var zstring = "phenotypes:value>=0->attribute.name";
-    var w = 500;  var h = 400;
 
-    var data = '<%= @associations.to_s%>'.evalJSON();
 
-    groupedBarChart(data, w, h, xstring, ystring, zstring).render();
     
 /*
     var data;
@@ -33,7 +34,7 @@
 	});
 
 */
-
+	console.log(hashJSP.collect(function(d) {return d.y}));
 
     </script>
   </div>
