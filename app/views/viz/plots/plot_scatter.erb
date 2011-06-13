@@ -3,7 +3,9 @@
 <% end %>
 
 <div id="center">
-  <div id="fig" style="width:800px;height:400px">
+  <div id="fig1" style="width:800px;height:400px">
+  </div>
+  <div id="fig2" style="width:800px;height:400px">
   </div>
   <div>
 
@@ -15,12 +17,31 @@
                "y": "$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude",
                "z": "$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[?(@.props[0].value == '2R')].description",
                "e": "$.stocks.*",
-               "args": {"jitter":"false"}}
+               "args": {"jitter":"false"}};
+
+
+/*
+    var vis = {"type":"scatter",
+    	      	"x":"$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[*].props[*].value",
+    	      	"y":"$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude",
+    		"z":"$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[*].description",    
+    		"e":"$.stocks.*"
+		};
+*/
     var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);
-    var figDiv = document.getElementById("fig");
+    var figDiv = document.getElementById("fig1");
     dotplot(hashJSP, figDiv, vis.args);
 
 
+    var vis = {"type": "scatter",
+               "x": "$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[?(@.props[0].value == '2L')].description",
+               "y": "$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude",
+               "z": "$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[?(@.props[0].value == '2L')].description",
+               "e": "$.stocks.*",
+               "args": {"jitter":"false"}}
+    var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);
+    var figDiv = document.getElementById("fig2");
+    dotplot(hashJSP, figDiv, vis.args);
   
 
     

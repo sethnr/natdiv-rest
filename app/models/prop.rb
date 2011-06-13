@@ -8,9 +8,8 @@ class Prop < ActiveRecord::Base
 
 def as_json(options = {})
   {
-#    :type => cvterm.cv.name+":"+cvterm.name,
+    :type => cvterm.cv.name+":"+cvterm.name,
     #REVERT TO ABOVE ONCE jsonPATH in place
-    :type => cvterm.name,
     :value => self.value,
     :rank => self.rank
 #    :definition => cvterm.definition,

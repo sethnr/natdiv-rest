@@ -28,12 +28,10 @@ class Project < ActiveRecord::Base
     { 
       :name => name,
       :description => description,      
-#      :stocks => stocks.as_json
       :stocks => nd_experiments.collect{|e| e.stocks}.flatten.uniq.as_json,
-#      :stocks nd_experiments.collect { |e| e.stocks }.flatten
-#      :stocks => nd_experiments.collect{|e| e.stocks}.uniq
 #     :experiments => nd_experiments.as_json,
 #      :publications => publication
+      :props => projectprops.as_json
     }
   end
 end

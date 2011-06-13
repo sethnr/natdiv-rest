@@ -15,12 +15,14 @@
     		"z":"$.stocks.*.props[?(@.type == 'organism')].value",    
     		"e":"$.stocks.*",
 		};
+
+ 
     var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);	
     var mapDiv = document.getElementById("fig");
     geoplot(hashJSP, mapDiv);
   
-
-	
+console.log(hashJSP.collect(function(d) {return d.z}));
+console.log(Object.toJSON(hashJSP[0]));	
 	
   
 /*

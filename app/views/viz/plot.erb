@@ -1,0 +1,52 @@
+<% content_for :head do %>
+  <%= stylesheet_link_tag "plot_bubble" -%>
+<% end %>
+
+  <div id="fig" style="width:500px;height:500px">&nbsp;</div>
+
+  <script type="text/javascript+protovis">
+
+
+
+var test1 = {"type": "geoplot",
+               "x": "$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.latitude",
+               "y": "$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude",
+               "z": "$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[?(@.props[0].value == '2L')].description",
+               "e": "$.stocks.*"
+               };
+
+
+	       var test2  = "{\"type\": \"geoplot\",\n               \"x\": \"$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.latitude\",\n               \"y\": \"$.stocks.*.experiments[?(@.type == 'field collection')].geolocation.longitude\",\n               \"z\": \"$.stocks.*.experiments[?(@.type == 'genotype assay')].genotypes[?(@.props[0].value == '2L')].description\",\n               \"e\": \"$.stocks.*\"\n               }";
+	       var test3 = test2.valueOf();
+
+	    /*
+	       alert(test1);
+	       alert(test2);
+	       alert(test3.evalJSON().e);
+	       */
+
+   var mapDiv = document.getElementById("fig");
+    var data; 
+    new Ajax.Request('http://base.vectorbase.org:3000/project/<%= params[:id] %>.json', {
+    	method:'get',
+  	requestHeaders: {Accept: 'application/json'},
+  	onSuccess: function(transport){
+    	    data = transport.responseText.evalJSON();
+	    var visTxt = data.props.collect(function(d) {if (d.type == 'VectorBase miscellaneous CV:vis') {return d.value;}}).valueOf();
+    	    
+	    console.log(visTxt)
+	    vis = String.interpret(visTxt).evalJSON();
+	    
+    	    var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);
+	    geoplot(hashJSP, mapDiv);
+	}
+	});
+
+	
+
+
+    </script>
+
+
+
+

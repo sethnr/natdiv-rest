@@ -3,6 +3,11 @@ class VizController < ApplicationController
   protect_from_forgery :except => [:auto_complete_for_stock_name]
 
   def index
+    pieces = params[:id].split(":")
+    @project_id = params[:id]
+    
+    render :action => 'plots/plot'
+
   end
 
   def plot_bubble
