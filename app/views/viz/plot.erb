@@ -18,8 +18,8 @@
   	requestHeaders: {Accept: 'application/json'},
   	onSuccess: function(transport){
     	    data = transport.responseText.evalJSON();
-	    var visTxt = data.props.collect(function(d) {if (d.type == 'VectorBase miscellaneous CV:vis') {return d.value;}});  
-	    /* console.log(visTxt);*/
+	    var visTxt = data.props.find(function(d) {return (d.type == 'VectorBase miscellaneous CV:vis')}).value;  
+	     console.log(visTxt);
 	    vis = String.interpret(visTxt).evalJSON();
 	    
     	    var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);
