@@ -12,9 +12,10 @@ class NdExperiment < ActiveRecord::Base
 #  has_many :nd_experiment_projects
   has_and_belongs_to_many :projects
   has_many :nd_experiment_protocols
+  has_many :nd_protocols, :through => :nd_experiment_protocols;
   has_many :nd_experiment_stocks
-#  has_many :stocks, through: :nd_experiment_stocks;
-  has_and_belongs_to_many :stocks
+  has_many :stocks, :through => :nd_experiment_stocks;
+#  has_and_belongs_to_many :stocks
   has_one :type, :class_name => "Cvterm", :primary_key => "type_id", :foreign_key => "cvterm_id"
 
   validates_presence_of(:nd_geolocation_id, :type_id)
@@ -27,6 +28,8 @@ class NdExperiment < ActiveRecord::Base
       :genotypes => genotypes.as_json,
       :geolocation => nd_geolocation.as_json,
       :phenotypes => phenotypes.as_json,
+      :props => nd_experimentprops.as_json,
+      :protocols => nd_protocols.as_json
 #      :stocks => stocks.as_json
     }
   end

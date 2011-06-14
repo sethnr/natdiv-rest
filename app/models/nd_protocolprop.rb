@@ -1,7 +1,6 @@
-class NdProtocolprop < ActiveRecord::Base
+class NdProtocolprop < Prop
 
   belongs_to :nd_protocol
-  belongs_to :cvterm
 
   validates_presence_of( :protocol_id, :cvterm_id )
 end

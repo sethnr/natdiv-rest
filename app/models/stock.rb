@@ -1,5 +1,6 @@
 class Stock < ActiveRecord::Base
 
+  belongs_to :type, :class_name => 'Cvterm', :foreign_key => :type_id
   belongs_to :dbxref, :class_name => 'Dbxref', :foreign_key => :dbxref_id
   belongs_to :organism, :class_name => 'Organism', :foreign_key => :organism_id
   has_many :cvterms, :through => :stock_cvterms
@@ -24,7 +25,7 @@ class Stock < ActiveRecord::Base
       :id => stock_id,
       :name => name,
       :uniquename => uniquename,
-      :type => type_id,
+      :type => type.cv.name+":"+type.name,
       :spp => organism.genus+" "+organism.species,
       :props => stockprops.as_json,
       :experiments => nd_experiments.as_json

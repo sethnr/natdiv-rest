@@ -5,4 +5,11 @@ class NdProtocol < ActiveRecord::Base
   has_many :nd_protocolprops
 
   validates_presence_of :name
+
+  def as_json(options = {})
+    {
+      :name => self.name,
+      :props => nd_protocolprops.as_json
+    }
+  end
 end
