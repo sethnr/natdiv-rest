@@ -414,6 +414,26 @@ ClusterSet.prototype.addMarker = function(marker) {
   }
 }
 /**
+ * passes values through to actual graph calls, based on text 
+ * description in DB. Nothing else. (to prevent CSS attacks)
+ * @params type - the graph type to call 
+ *         dataHash - data hash to call
+ *         div - div to put it in
+ */
+function callPlot(type, dataHash, div) {
+    var functions = {
+	"map":"geoplot",
+	"geoplot":"geoplot",
+	"dot":"dotplot",
+	"bar":"groupedBarChart",
+	"groupbar":"groupedBarChart",
+	"matrix":"frequencyMatrix"
+    };
+    eval(functions[type]+"(dataHash, div)");
+
+}
+
+/**
  * the core method... traverse json structure to retrieve array of hashes
  * each hash has 4 vals: x/y/z vals and 'o' the json object we iterate over
  * @params json - the json object to be parsed 
@@ -442,7 +462,6 @@ function getDataHash_jsp (json, est, xst, yst, zst) {
   }
 
   var paths = jsonPath(json, est,{resultType:"PATH"});
-  console.log(est+" "+paths.length);
 
   var dataHash = paths.map(function(d,i) {
       var retHash =  {x: getVal(json, est, d,xst),  
