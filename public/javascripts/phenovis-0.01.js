@@ -419,8 +419,9 @@ ClusterSet.prototype.addMarker = function(marker) {
  * @params type - the graph type to call 
  *         dataHash - data hash to call
  *         div - div to put it in
+ *         args - additional args for function (optional)
  */
-function callPlot(type, dataHash, div) {
+function callPlot(type, dataHash, div, args) {
     var functions = {
 	"map":"geoplot",
 	"geoplot":"geoplot",
@@ -429,7 +430,7 @@ function callPlot(type, dataHash, div) {
 	"groupbar":"groupedBarChart",
 	"matrix":"frequencyMatrix"
     };
-    eval(functions[type]+"(dataHash, div)");
+    eval(functions[type]+"(dataHash, div, args)");
 
 }
 
@@ -1059,7 +1060,7 @@ function groupedBarChart(data, div,args) {
     var h = div.style.height.replace("px","") || 500;
 //    var args = args.evalJSON();
 
-    console.log(Object.toJSON(args));
+//    console.log(Object.toJSON(args));
 
 /*
   function guessScale(scaleVals, sz) {
@@ -1119,9 +1120,12 @@ function groupedBarChart(data, div,args) {
   var yvals = data.collect(function(d) {return d.y});
   var zvals = data.collect(function(d) {return d.z});
   var n = xvals.length;
+ 
+  var xType; var yType="linear";
 
+ if(args) { xType = args.xscale; yType = args.yscale || yType;}
   var x = pv.Scale.ordinal(pv.range(n)).splitBanded(0, w, 9/10);
-  var y = getScale(yvals, h, args.yscale);
+  var y = getScale(yvals, h, yType);
   var z = pv.Colors.category10(); //, s = x.range().band / 2;
 
 

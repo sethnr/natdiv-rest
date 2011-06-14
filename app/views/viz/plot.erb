@@ -1,15 +1,19 @@
 <% content_for :head do %>
   <%= stylesheet_link_tag "plot_bubble" -%>
 <% end %>
+<h3><%= params[:type] %>:<%= params[:id] %></h3>
+
 
   <div id="fig" style="width:500px;height:500px">&nbsp;</div>
+
 
   <script type="text/javascript+protovis">
 
    var mapDiv = document.getElementById("fig");
     var data;
-    
-    new Ajax.Request(config.REST+'project/<%= params[:id] %>.json', {
+    var proId = "<%= params[:id] %>";
+    var visType = "<%= params[:type] %>";
+    new Ajax.Request(config.REST+'project/'+proId+'.json', {
     	method:'get',
   	requestHeaders: {Accept: 'application/json'},
   	onSuccess: function(transport){
@@ -19,7 +23,7 @@
 	    vis = String.interpret(visTxt).evalJSON();
 	    
     	    var hashJSP = getDataHash_jsp(data,vis.e,vis.x,vis.y,vis.z);
-	    callPlot(vis.type, hashJSP, mapDiv);
+	    callPlot(visType || vis.type, hashJSP, mapDiv, vis.args);
 	}
 	});
 
