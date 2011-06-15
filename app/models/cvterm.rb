@@ -39,8 +39,6 @@ class Cvterm < ActiveRecord::Base
   set_primary_key "cvterm_id"
 
 def as_json(options = {})
-#  super(:only => [ :name, :cv_id, :cvterm_id], :include => [:cv => @cv.name, :dbxref => @dbxref.accession ])
-#  super(:only => [ :name, :cv_id, :cvterm_id] )
   {
     :cvterm_id => self.cvterm_id,
     :name => self.name,

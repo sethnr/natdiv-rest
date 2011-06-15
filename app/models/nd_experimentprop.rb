@@ -1,4 +1,4 @@
-class NdExperimentprop < ActiveRecord::Base
+class NdExperimentprop < Prop
 
   belongs_to :nd_experiment
   belongs_to :cvterm

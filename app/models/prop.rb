@@ -5,11 +5,14 @@ class Prop < ActiveRecord::Base
 
 #  belongs_to :type,       :class_name => "Cvterm", :foreign_key => :type_id
 
+def print_type 
+  self.cvterm.nil? ? "null" : self.cvterm.cv.name+":"+self.cvterm.name
+#  self.cvterm.as_json
+end
 
 def as_json(options = {})
   {
-    :type => cvterm.cv.name+":"+cvterm.name,
-    #REVERT TO ABOVE ONCE jsonPATH in place
+    :type => self.print_type,
     :value => self.value,
     :rank => self.rank
 #    :definition => cvterm.definition,
