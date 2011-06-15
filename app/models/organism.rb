@@ -21,4 +21,10 @@ class Organism < ActiveRecord::Base
   set_table_name "organism"
   set_primary_key "organism_id"
 
+def as_json
+   {
+     :spp => self.genus+" "+self.species
+    }
+end
+
 end

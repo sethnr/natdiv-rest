@@ -5,16 +5,14 @@ class NdExperiment < ActiveRecord::Base
 
   has_many :nd_experimentprops
   has_many :nd_experiment_dbxrefs
-#  has_many :nd_experiment_genotypes
-#  has_many :nd_experiment_phenotypes
   has_and_belongs_to_many :genotypes, :join_table => :nd_experiment_genotype
   has_and_belongs_to_many :phenotypes, :join_table => :nd_experiment_phenotype
-#  has_many :nd_experiment_projects
   has_and_belongs_to_many :projects
   has_many :nd_experiment_protocols
   has_many :nd_experiment_stocks
+  has_many :stocks, :through => :nd_experiment_stocks
 #  has_many :stocks, through: :nd_experiment_stocks;
-  has_and_belongs_to_many :stocks
+#  has_and_belongs_to_many :stocks
   has_one :type, :class_name => "Cvterm", :primary_key => "type_id", :foreign_key => "cvterm_id"
 
   validates_presence_of(:nd_geolocation_id, :type_id)
