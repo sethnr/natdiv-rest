@@ -9,7 +9,7 @@ ActionController::Routing::Routes.draw do |map|
     # experiment.resources :cvterms
   end
 
-  map.resources :stock, do |stock|
+  map.resources :stock do |stock|
     # experiment.resources :cvterms
   end
 
