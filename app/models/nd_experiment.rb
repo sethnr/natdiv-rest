@@ -26,7 +26,7 @@ class NdExperiment < ActiveRecord::Base
       :genotypes => genotypes.as_json,
       :geolocation => nd_geolocation.as_json,
       :phenotypes => phenotypes.as_json,
-      :protocols => nd_protocols.as_json
+      :protocols => nd_protocols.as_json,
       :props => nd_experimentprops.as_json
 #      :stocks => stocks.as_json
     }
