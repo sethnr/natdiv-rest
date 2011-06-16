@@ -26,7 +26,7 @@ class Stock < ActiveRecord::Base
       :name => name,
       :uniquename => uniquename,
       :type => type.cv.name+":"+type.name,
-      :spp => organism.genus+" "+organism.species,
+      :organism => organism.as_json,
       :props => stockprops.as_json,
       :experiments => nd_experiments.as_json
     }

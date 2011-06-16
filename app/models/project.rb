@@ -34,5 +34,15 @@ class Project < ActiveRecord::Base
       :props => projectprops.as_json
     }
   end
+  def as_json_head(options = {})
+    { 
+      :name => name,
+      :description => description,      
+      :stocks => nd_experiments.collect{|e| e.stocks}.flatten.uniq.id,
+      :experiments => nd_experiments.collect{|e| e.id},
+      :publication => self.publication,
+      :props => projectprops.as_json
+    }
+  end
 end
 

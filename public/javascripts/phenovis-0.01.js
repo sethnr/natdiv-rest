@@ -414,6 +414,27 @@ ClusterSet.prototype.addMarker = function(marker) {
   }
 }
 /**
+ * passes values through to actual graph calls, based on text 
+ * description in DB. Nothing else. (to prevent CSS attacks)
+ * @params type - the graph type to call 
+ *         dataHash - data hash to call
+ *         div - div to put it in
+ *         args - additional args for function (optional)
+ */
+function callPlot(type, dataHash, div, args) {
+    var functions = {
+	"map":"geoplot",
+	"geoplot":"geoplot",
+	"dot":"dotplot",
+	"bar":"groupedBarChart",
+	"groupbar":"groupedBarChart",
+	"matrix":"frequencyMatrix"
+    };
+    eval(functions[type]+"(dataHash, div, args)");
+
+}
+
+/**
  * the core method... traverse json structure to retrieve array of hashes
  * each hash has 4 vals: x/y/z vals and 'o' the json object we iterate over
  * @params json - the json object to be parsed 
@@ -442,7 +463,6 @@ function getDataHash_jsp (json, est, xst, yst, zst) {
   }
 
   var paths = jsonPath(json, est,{resultType:"PATH"});
-  console.log(est+" "+paths.length);
 
   var dataHash = paths.map(function(d,i) {
       var retHash =  {x: getVal(json, est, d,xst),  
@@ -1040,7 +1060,7 @@ function groupedBarChart(data, div,args) {
     var h = div.style.height.replace("px","") || 500;
 //    var args = args.evalJSON();
 
-    console.log(Object.toJSON(args));
+//    console.log(Object.toJSON(args));
 
 /*
   function guessScale(scaleVals, sz) {
@@ -1100,9 +1120,12 @@ function groupedBarChart(data, div,args) {
   var yvals = data.collect(function(d) {return d.y});
   var zvals = data.collect(function(d) {return d.z});
   var n = xvals.length;
+ 
+  var xType; var yType="linear";
 
+ if(args) { xType = args.xscale; yType = args.yscale || yType;}
   var x = pv.Scale.ordinal(pv.range(n)).splitBanded(0, w, 9/10);
-  var y = getScale(yvals, h, args.yscale);
+  var y = getScale(yvals, h, yType);
   var z = pv.Colors.category10(); //, s = x.range().band / 2;
 
 
