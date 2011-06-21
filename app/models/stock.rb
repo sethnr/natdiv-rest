@@ -45,16 +45,4 @@ class Stock < ActiveRecord::Base
     }
   end
 
-  def as_xml(options = {})
-    {
-      :id => stock_id,
-      :name => name,
-      :uniquename => uniquename,
-      :type => type.cv.name+":"+type.name,
-      :organism => organism.as_json,
-      :props => stockprops.as_json,
-      :experiments => nd_experiments.as_json
-    }
-  end
-  
 end
