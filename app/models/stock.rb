@@ -20,6 +20,11 @@ class Stock < ActiveRecord::Base
 #  has_and_belongs_to_many :nd_experiments, :join_table => :nd_experiment_stock
   validates_presence_of( :uniquename, :type_id)
 
+
+  def projects
+    return Project.find_by_sql("select * from project join nd_experiment_project using (project_id) join nd_experiment_stock using (nd_experiment_id) where stock_id = "+id.to_s)
+  end
+
   def as_json(options = {})
     {
       :id => stock_id,
