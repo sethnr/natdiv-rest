@@ -27,8 +27,17 @@ class NdExperiment < ActiveRecord::Base
       :geolocation => nd_geolocation.as_json,
       :phenotypes => phenotypes.as_json,
       :protocols => nd_protocols.as_json,
-      :props => nd_experimentprops.as_json
-#      :stocks => stocks.as_json
+      :props => nd_experimentprops.as_json,
+      :stock_ids => stocks.collect{|s| s.id}
+    }
+  end
+
+  def as_json_min(options = {})
+    { 
+      :id => nd_experiment_id,
+      :type => self.type.name
+#      :props => nd_experimentprops.as_json,
+#      :stock_ids => stocks.collect{|s| s.stock_id}
     }
   end
 

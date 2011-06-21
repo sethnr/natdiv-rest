@@ -31,5 +31,18 @@ class Stock < ActiveRecord::Base
       :experiments => nd_experiments.as_json
     }
   end
+
+  def as_json_min(options = {})
+    {
+      :id => stock_id,
+      :name => name,
+#      :uniquename => uniquename,
+      :type => type.cv.name+":"+type.name
+#      :organism => organism.as_json,
+#      :props => stockprops.as_json,
+#      :experiment_ids => nd_experiments.collect{|e| e.id}
+      
+    }
+  end
   
 end

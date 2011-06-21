@@ -20,45 +20,45 @@ ActionController::Routing::Routes.draw do |map|
     # experiment.resources :cvterms
   end
 
-  # Sample of regular route:
-  #   map.connect 'products/:id', :controller => 'catalog', :action => 'view'
-  # Keep in mind you can assign values other than :controller and :action
+   map.connect 'project/:id/head.:format',
+    :controller => "project",
+    :action => "head"
+ 
+   map.connect 'project/:id/stocks.:format',
+    :controller => "project",
+    :action => "stocks"
 
-  # Sample of named route:
-  #   map.purchase 'products/:id/purchase', :controller => 'catalog', :action => 'purchase'
-  # This route can be invoked with purchase_url(:id => product.id)
+   map.connect 'project/:id/experiments.:format',
+    :controller => "project",
+    :action => "experiments"
 
-  # Sample resource route (maps HTTP verbs to controller actions automatically):
-  #   map.resources :products
 
-  # Sample resource route with options:
-  #   map.resources :products, :member => { :short => :get, :toggle => :post }, :collection => { :sold => :get }
+   map.connect 'stock/:id/head.:format',
+    :controller => "stock",
+    :action => "head"
+ 
+   map.connect 'stock/:id/projects.:format',
+    :controller => "stock",
+    :action => "projects"
+ 
+   map.connect 'stock/:id/experiments.:format',
+    :controller => "stock",
+    :action => "experiments"
 
-  # Sample resource route with sub-resources:
-  #   map.resources :products, :has_many => [ :comments, :sales ], :has_one => :seller
-  
-  # Sample resource route with more complex sub-resources
-  #   map.resources :products do |products|
-  #     products.resources :comments
-  #     products.resources :sales, :collection => { :recent => :get }
-  #   end
+   map.connect 'experiment/:id/head.:format',
+    :controller => "nd_experiment",
+    :action => "head"
 
-  # Sample resource route within a namespace:
-  #   map.namespace :admin do |admin|
-  #     # Directs /admin/products/* to Admin::ProductsController (app/controllers/admin/products_controller.rb)
-  #     admin.resources :products
-  #   end
+   map.connect 'experiment/:id/stocks.:format',
+    :controller => "nd_experiment",
+    :action => "stocks"
 
-  # You can have the root of your site routed with map.root -- just remember to delete public/index.html.
-  # map.root :controller => "welcome"
+   map.connect 'experiment/:id/projects.:format',
+    :controller => "nd_experiment",
+    :action => "projects"
 
-  # See how all your routes lay out with "rake routes"
 
-  # Install the default routes as the lowest priority.
-  # Note: These default routes make all actions in every controller accessible via GET requests. You should
-  # consider removing or commenting them out if you're using named routes and resources.
-#  map.connect ':controller/:action/:id'
-#  map.connect ':controller/:action/:id.:format'
+
   map.connect 'plot/:id',
     :controller => "viz",
     :action => "plot"

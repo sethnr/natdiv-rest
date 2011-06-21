@@ -17,4 +17,32 @@ class StockController < ApplicationController
     end
   end
 
+  def head
+    @stock = Stock.find(params[:id])
+     respond_to do |format|
+       format.html # index.html.erb
+       format.xml  { render :xml => @stock }
+       format.json { render :json => @stock.as_json_min() }
+     end
+  end
+
+  def projects
+    @stock = Stock.find(params[:id])
+     respond_to do |format|
+      format.html # index.html.erb
+      format.xml  { render :xml => @stock }
+      format.json { render :json => @stock.nd_experiments.collect{|e| e.projects}.flatten.uniq.collect{|p| p.as_json_min} }
+     end
+  end
+
+  def experiments
+    @stock = Stock.find(params[:id])
+     respond_to do |format|
+      format.html # index.html.erb
+      format.xml  { render :xml => @stock }
+      format.json { render :json => @stock.nd_experiments.as_json }
+    end
+  end
+
+
 end

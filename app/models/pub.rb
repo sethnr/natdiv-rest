@@ -50,6 +50,7 @@ class Pub < ActiveRecord::Base
   has_many :phylonodes 
   has_many :phylotree_pubs , :foreign_key => :pub_id
   has_many :phylotrees 
+  has_and_belongs_to_many :projects, :foreign_key => :pub_id
   has_many :protocols , :foreign_key => :pub_id
   has_many :pub_dbxrefs , :foreign_key => :pub_id
   has_many :pubauthors , :foreign_key => :pub_id

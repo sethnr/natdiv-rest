@@ -3,16 +3,11 @@ class Project < ActiveRecord::Base
 
   has_and_belongs_to_many :nd_experiments, :join_table => :nd_experiment_project
   has_many :projectprops
-
+  has_and_belongs_to_many :pubs, :join_table => :project_pub
 
 #  has_many :stocks, :through => :nd_experiments, :source => :stocks;
 
   validates_presence_of( :name, :description )
-
-  
-#  has_many :nd_experiment_stocks, :through => nd_experiment_projects
-
-#  has_many :stocks, :finder_sql => 'SELECT DISTINCT s.* FROM project p LEFT JOIN nd_experiment_project ep USING(project_id) LEFT JOIN nd_experiment e ON ep.nd_experiment_id = e.nd_experiment_id LEFT JOIN nd_experiment_stock es ON e.nd_experiment_id = es.nd_experiment_id LEFT JOIN stock s USING (stock_id)'
 
 
 #  def stocks_uniq()
@@ -34,15 +29,22 @@ class Project < ActiveRecord::Base
       :props => projectprops.as_json
     }
   end
-  def as_json_head(options = {})
-    { 
+
+  def as_json_min(options = {})
+    {
       :name => name,
       :description => description,      
-      :stocks => nd_experiments.collect{|e| e.stocks}.flatten.uniq.id,
-      :experiments => nd_experiments.collect{|e| e.id},
-      :publication => self.publication,
+      :stock_ids => nd_experiments.collect{|e| e.stocks}.flatten.uniq.collect{|s| s.stock_id},
+      #      :experiment_ids => nd_experiments.collect{|e| e.id},
+      :publications => pubs,
       :props => projectprops.as_json
     }
   end
+
+
+#  def as_json_subs(options = {})
+#    super(:only => [:name, :description], :include =>[:projectprops])
+#  end
+
 end
 
