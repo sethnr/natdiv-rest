@@ -2,18 +2,21 @@ class NdExperimentController < ApplicationController
 
   def index
      @experiments = NdExperiment.all
-     respond_to do |format|
- #      format.html # index.html.erb
-       format.json { render :json => @experiments }
-       format.xml  { render :xml => @experiments }
-     end
+    params[:format] ||= 'json'
+    respond_to do |format|
+      #      format.html # index.html.erb
+      format.json { render :json => @experiments }
+      format.xml  { render :xml => @experiments }
+    end
   end
 
 
   def show
     @experiment = NdExperiment.find(params[:id])
+    params[:format] ||= 'json'
     respond_to do |format|
 #      format.html # index.html.erb
+      
       format.json { render :json => @experiment }
       format.xml  { render :xml => @experiment }
     end
@@ -21,6 +24,7 @@ class NdExperimentController < ApplicationController
 
   def head
     @experiment = NdExperiment.find(params[:id])
+    params[:format] ||= 'json'
     respond_to do |format|
 #      format.html # index.html.erb
       format.json { render :json => @experiment.as_json_min() }
@@ -30,6 +34,7 @@ class NdExperimentController < ApplicationController
 
   def stocks
     @experiment = NdExperiment.find(params[:id])
+    params[:format] ||= 'json'
     respond_to do |format|
 #      format.html # index.html.erb
       format.json { render :json => @experiment.stocks.collect{|s| s.as_json_min()} }
@@ -39,6 +44,7 @@ class NdExperimentController < ApplicationController
 
   def projects
     @experiment = NdExperiment.find(params[:id])
+    params[:format] ||= 'json'
     respond_to do |format|
 #      format.html # index.html.erb
 #      format.xml  { render :xml => @experiment }
