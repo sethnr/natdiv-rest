@@ -1,19 +1,21 @@
-class ProjectController < ApplicationController
+class ProjectController < NatdivController
 
   def index
-#    redirect_to :action => :list
-#    @params[:l] ||= 50
+#    params[:l] ||= 50
+#    params[:s] ||= 0
+    set_defaults(params)
     @projects = Project.find(:all, :limit => params[:l], :offset => params[:s])
-    params[:format] ||= 'json'
+#    set_defaults(params)
+    
     respond_to do |format|
-      format.json {render :json => @projects.collect{|p| p.as_json_min()} }
+      format.json { render_json_array(@projects.collect{|p| p.as_json_min()}, Project.count, params[:s]) }
       format.xml  { render :xml => @project }
     end
   end
 
   def show
     @project = Project.find(params[:id])
-    params[:format] ||= 'json'
+    set_defaults(params)
     respond_to do |format|
 #       format.html # index.html.erb
       format.json { render :json => @project }
@@ -32,20 +34,28 @@ class ProjectController < ApplicationController
 
   def stocks
     @project = Project.find(params[:id])
-    params[:format] ||= 'json'
+    set_defaults(params)
      respond_to do |format|
 #       format.html # index.html.erb
-      format.json { render :json => @project.nd_experiments.collect{|e| e.stocks}.flatten.uniq.collect{|s| s.as_json} }
+# figure out how to get subset of total & replace the inefficient select below:
+      format.json { render_json_array( @project.stocks[params[:s],params[:e]].collect{|s| s.as_json_min()},
+                                       @project.stocks.count,
+                                       params[:s]) }
+#      format.json { render :json => @project.nd_experiments.collect{|e| e.stocks}.flatten.uniq.collect{|s| s.as_json} }
       format.xml  { render :xml => @project.nd_experiments.collect{|e| e.stocks}.flatten.uniq }
      end
   end
 
   def experiments
     @project = Project.find(params[:id])
-    params[:format] ||= 'json'
+    set_defaults(params)
      respond_to do |format|
 #       format.html 
-      format.json { render :json => @project.nd_experiments.collect{ |e| e.as_json()} }
+
+# figure out how to get subset of total & replace the inefficient select below:
+      format.json { render_json_array( @project.nd_experiments[params[:s],params[:e]].collect{ |e| e.as_json()} ,
+                                       @project.nd_experiments.count,
+                                       params[:s] ) }
       format.xml  { render :xml => @project.nd_experiments }
      end
   end

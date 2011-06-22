@@ -21,7 +21,7 @@ class NdExperiment < ActiveRecord::Base
   def as_json(options = {})
     { 
       :id => nd_experiment_id,
-      :name => self.type.name+"_"+nd_experiment_id,
+      :name => self.type.name+"_"+nd_experiment_id.to_s,
       :type => self.type.name,
       :props => nd_experimentprops.as_json,
 
@@ -36,8 +36,8 @@ class NdExperiment < ActiveRecord::Base
   def as_json_min(options = {})
     { 
       :id => nd_experiment_id,
-      :name => self.type.name+"_"+nd_experiment_id
-      :type => self.type.name
+      :name => self.type.name+"_"+nd_experiment_id.to_s,
+      :type => self.type.name,
       :props => nd_experimentprops.as_json,
 
     }
