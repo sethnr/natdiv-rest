@@ -29,10 +29,11 @@ class Stock < ActiveRecord::Base
     {
       :id => stock_id,
       :name => name,
-      :uniquename => uniquename,
+      :description => description,
       :type => type.cv.name+":"+type.name,
       :organism => organism.as_json,
       :props => stockprops.as_json,
+
       :experiments => nd_experiments.as_json
     }
   end
@@ -41,12 +42,10 @@ class Stock < ActiveRecord::Base
     {
       :id => stock_id,
       :name => name,
-#      :uniquename => uniquename,
-      :type => type.cv.name+":"+type.name
-#      :organism => organism.as_json,
-#      :props => stockprops.as_json,
-#      :experiment_ids => nd_experiments.collect{|e| e.id}
-      
+      :description => description,
+      :type => type.cv.name+":"+type.name,
+      :organism => organism.as_json,
+      :props => stockprops.as_json    
     }
   end
 

@@ -25,25 +25,23 @@ class Project < ActiveRecord::Base
 
   def as_json(options = {})
     { 
+      :id => id,
       :name => name,
       :description => description,      
+      :props => projectprops.as_json
+      :publications => pubs,
       :stocks => stocks.as_json,
 #     :experiments => nd_experiments.as_json,
-#      :publications => publication
-      :props => projectprops.as_json
     }
   end
 
   def as_json_min(options = {})
     {
+      :id => id,
       :name => name,
       :description => description,
-#      :stock_count => nd_experiments.collect{|e| e.stocks}.flatten.length,
-#      :stock_ids => nd_experiments.collect{|e| e.stocks}.flatten.uniq.collect{|s| s.stock_id},
-      :stock_ids => stocks.collect{|s| s.id},
-      #      :experiment_ids => nd_experiments.collect{|e| e.id},
-      :publications => pubs,
       :props => projectprops.as_json
+      :publications => pubs,
     }
   end
 
