@@ -2,9 +2,9 @@ class NdExperimentController < NatdivController
 
   def index
     set_defaults(params)
-    @experiments = NdExperiment.find(:all, :limit => params[:l], :offset => params[:s])
+    @experiments = NdExperiment.find(:all, :limit => params[:l], :offset => params[:o])
     respond_to do |format|
-      format.json { render_json_array(@experiments.collect{|p| p.as_json_min()}, NdExperiment.count, params[:s]) }
+      format.json { render_json_array(@experiments.collect{|p| p.as_json_min()}, NdExperiment.count, params[:o]) }
       format.xml { render :xml => @experiments }
     end
   end
@@ -35,9 +35,9 @@ class NdExperimentController < NatdivController
     set_defaults(params)
     respond_to do |format|
 #      format.html # index.html.erb
-      format.json { render_json_array( @experiment.stocks[params[:s],params[:l]].collect{|s| s.as_json_min()},
+      format.json { render_json_array( @experiment.stocks[params[:o],params[:l]].collect{|s| s.as_json_min()},
                                       @experiment.stocks.count,
-                                      params[:s] ) }
+                                      params[:o] ) }
 #      format.json { render :json => @experiment.stocks.collect{|s| s.as_json_min()} }
       format.xml  { render :xml => @experiment.stocks }
     end
@@ -51,9 +51,9 @@ class NdExperimentController < NatdivController
 #      format.xml  { render :xml => @experiment }
 # figure out how to get subset of total & replace the inefficient select below:
 #      format.json { render :json => @experiment.projects.collect{|p| p.as_json_min()} }
-      format.json { render_json_array( @experiment.projects[params[:s],params[:l]].collect{|s| s.as_json_min()},
+      format.json { render_json_array( @experiment.projects[params[:o],params[:l]].collect{|s| s.as_json_min()},
                                        @experiment.projects.count,
-                                       params[:s] ) }
+                                       params[:o] ) }
       format.xml  { render :xml => @experiment.projects }
     end
   end

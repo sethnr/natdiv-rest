@@ -2,9 +2,9 @@ class StockController < NatdivController
 
   def index
     set_defaults(params)
-    @stocks = Stock.find(:all, :limit => params[:l], :offset => params[:s])
+    @stocks = Stock.find(:all, :limit => params[:l], :offset => params[:o])
     respond_to do |format|
-      format.json { render_json_array(@stocks.collect{|p| p.as_json_min()}, Stock.count, params[:s]) }
+      format.json { render_json_array(@stocks.collect{|p| p.as_json_min()}, Stock.count, params[:o]) }
       format.xml { render :xml => @stock }
     end
   end
@@ -36,9 +36,9 @@ class StockController < NatdivController
     respond_to do |format|
       #      format.html # index.html.erb
 #      format.json { render :json => @stock.nd_experiments.collect{|e| e.projects}.flatten.uniq.collect{|p| p.as_json_min} }
-      format.json { render_json_array( @stock.projects[params[:s],params[:l]].collect{|s| s.as_json_min()},
+      format.json { render_json_array( @stock.projects[params[:o],params[:l]].collect{|s| s.as_json_min()},
                                        @stock.projects.count,
-                                       params[:s]) }
+                                       params[:o]) }
       format.xml  { render :xml => @stock.nd_experiments.collect{|e| e.projects}.flatten.uniq }
     end
   end
@@ -48,10 +48,10 @@ class StockController < NatdivController
     set_defaults(params)
     respond_to do |format|
       #      format.html # index.html.erb
-      format.json { render_json_array( @stock.nd_experiments[params[:s],params[:l]].collect{|s| s.as_json_min()},
+      format.json { render_json_array( @stock.nd_experiments[params[:o],params[:l]].collect{|s| s.as_json_min()},
                                        @stock.nd_experiments.count,
-                                       params[:s]) }
-#      format.json { render :json => @stock.nd_experiments.limit(params[:l]).offset(params[:s]).as_json }
+                                       params[:o]) }
+#      format.json { render :json => @stock.nd_experiments.limit(params[:l]).offset(params[:o]).as_json }
       format.xml  { render :xml => @stock.nd_experiments }
     end
   end
