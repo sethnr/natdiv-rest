@@ -38,7 +38,7 @@ class ProjectController < NatdivController
      respond_to do |format|
 #       format.html # index.html.erb
 # figure out how to get subset of total & replace the inefficient select below:
-      format.json { render_json_array( @project.stocks[params[:s],params[:e]].collect{|s| s.as_json_min()},
+      format.json { render_json_array( @project.stocks[params[:s],params[:l]].collect{|s| s.as_json_min()},
                                        @project.stocks.count,
                                        params[:s]) }
 #      format.json { render :json => @project.nd_experiments.collect{|e| e.stocks}.flatten.uniq.collect{|s| s.as_json} }
@@ -53,7 +53,7 @@ class ProjectController < NatdivController
 #       format.html 
 
 # figure out how to get subset of total & replace the inefficient select below:
-      format.json { render_json_array( @project.nd_experiments[params[:s],params[:e]].collect{ |e| e.as_json()} ,
+      format.json { render_json_array( @project.nd_experiments[params[:s],params[:l]].collect{ |e| e.as_json()} ,
                                        @project.nd_experiments.count,
                                        params[:s] ) }
       format.xml  { render :xml => @project.nd_experiments }

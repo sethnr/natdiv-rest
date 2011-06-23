@@ -4,7 +4,7 @@ class NatdivController < ApplicationController
     offset ||= 0
     render :json => {
       :count => count,
-      :start => offset.to_i + 1,
+      :start => offset.to_i,
       :end => offset.to_i + jarray.length,
       :records => jarray
     }
@@ -15,7 +15,7 @@ class NatdivController < ApplicationController
     params[:s] ||= 0
     params[:l] = params[:l].to_i
     params[:s] = params[:s].to_i
-    params[:e] = (params[:s].to_i+params[:l].to_i)
+#    params[:e] = (params[:s].to_i+params[:l].to_i)
     params[:format] ||= 'json'
     params
   end

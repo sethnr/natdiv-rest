@@ -36,7 +36,7 @@ class StockController < NatdivController
     respond_to do |format|
       #      format.html # index.html.erb
 #      format.json { render :json => @stock.nd_experiments.collect{|e| e.projects}.flatten.uniq.collect{|p| p.as_json_min} }
-      format.json { render_json_array( @stock.projects[params[:s],params[:e]].collect{|s| s.as_json_min()},
+      format.json { render_json_array( @stock.projects[params[:s],params[:l]].collect{|s| s.as_json_min()},
                                        @stock.projects.count,
                                        params[:s]) }
       format.xml  { render :xml => @stock.nd_experiments.collect{|e| e.projects}.flatten.uniq }
@@ -48,7 +48,7 @@ class StockController < NatdivController
     set_defaults(params)
     respond_to do |format|
       #      format.html # index.html.erb
-      format.json { render_json_array( @stock.nd_experiments[params[:s],params[:e]].collect{|s| s.as_json_min()},
+      format.json { render_json_array( @stock.nd_experiments[params[:s],params[:l]].collect{|s| s.as_json_min()},
                                        @stock.nd_experiments.count,
                                        params[:s]) }
 #      format.json { render :json => @stock.nd_experiments.limit(params[:l]).offset(params[:s]).as_json }
