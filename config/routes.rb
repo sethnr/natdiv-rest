@@ -1,5 +1,16 @@
 ActionController::Routing::Routes.draw do |map|
   # The priority is based upon order of creation: first created -> highest priority.
+  map.connect 'projects',
+    :controller => "project",
+    :action => "index"
+
+  map.connect 'stocks',
+    :controller => "stock",
+    :action => "index"
+
+  map.connect 'experiments',
+    :controller => "nd_experiment",
+    :action => "index"
 
   map.resources :phenotype do |phenotypes|
     phenotypes.resources :cvterms
@@ -67,13 +78,13 @@ ActionController::Routing::Routes.draw do |map|
 
 
 
-  map.connect 'plot/:id',
-    :controller => "viz",
-    :action => "plot"
+#  map.connect 'plot/:id',
+#    :controller => "viz",
+#    :action => "plot"
 
-  map.connect 'plot/:type/:id',
-    :controller => "viz",
-    :action => "plot"
+#  map.connect 'plot/:type/:id',
+#    :controller => "viz",
+#    :action => "plot"
   
 #  map.connect "*anything",
 #   :controller => "home",

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" xmlns="http://wadl.dev.java.net/2009/02">
+  <resources base="http://funcgen.vectorbase.org/popgenDev/REST/">
+    <!-- projects -->
+    <resource path="projects">
+      <param name="o" type="xsd:integer" style="query" default="0" />
+      <param name="l" type="xsd:integer" style="query" default="50" /> 
+    </resource>
+    <response>
+      <representation mediaType="application/json" element="objectList" id="projectList"/>
+    </response>
+    <resource path="project/{projectId}/">
+      <response>
+	<representation mediaType="application/json" element="project" id="project"/>
+      </response>
+      <resource path="stocks">
+	<param name="s" type="xsd:string" style="query"/>
+	<param name="l" type="xsd:string" style="query"/>
+	<response>
+	  <representation mediaType="application/json" element="objectList" id="projectStocks"/>
+	</response>
+      </resource>
+      <resource path="experiments">
+	<param name="o" type="xsd:integer" style="query" default="0" />
+	<param name="l" type="xsd:integer" style="query" default="50" /> 
+	<response>
+	  <representation mediaType="application/json" element="objectList" id="projectExperiments"/>
+	</response>
+      </resource>
+    </resource>
+    <!-- stocks -->
+    <resource path="stocks">
+      <param name="o" type="xsd:integer" style="query" default="0" />
+      <param name="l" type="xsd:integer" style="query" default="50" /> 
+    </resource>
+    <response>
+      <representation mediaType="application/json" element="objectList" id="stockList"/>
+    </response>
+    <resource path="stock/{stockId}/">
+      <response>
+	<representation mediaType="application/json" element="stock" id="stock"/>
+      </response>    
+      <resource path="projects">
+	<param name="s" type="xsd:string" style="query"/>
+	<param name="l" type="xsd:string" style="query"/>
+	<response>
+	  <representation mediaType="application/json" element="objectList" id="stockProjects"/>
+	</response>
+      </resource>
+      <resource path="experiments">
+	<param name="o" type="xsd:integer" style="query" default="0" />
+	<param name="l" type="xsd:integer" style="query" default="50" /> 
+	<response>
+	  <representation mediaType="application/json" element="objectList" id="stockExperiments"/>
+	</response>
+      </resource>
+    </resource>
+    <!-- experiments -->
+    <resource path="experiments">
+      <param name="o" type="xsd:integer" style="query" default="0" />
+      <param name="l" type="xsd:integer" style="query" default="50" /> 
+    </resource>
+    <response>
+      <representation mediaType="application/json" element="objectList" id="experimentList"/>
+    </response>
+    <resource path="experiment/{experimentId}/">
+      <response>
+	<representation mediaType="application/json" element="experiment" id="experiment"/>
+      </response>
+      
+      <resource path="projects">
+	<param name="s" type="xsd:string" style="query"/>
+	<param name="l" type="xsd:string" style="query"/>
+	<response>
+	  <representation mediaType="application/json" element="objectList" id="experimentProjects"/>
+	</response>
+      </resource>
+      <resource path="stocks">
+	<param name="o" type="xsd:integer" style="query" default="0" />
+	<param name="l" type="xsd:integer" style="query" default="50" /> 
+	<response>
+	  <representation mediaType="application/json" element="objectList" id="experimentStocks"/>
+	</response>
+      </resource>
+    </resource>
+<!--  search     (to be implemented)   -->
+<!--    <resource path="search/{searchString}">
+	<param name="o" type="xsd:integer" style="query" default="0" />
+	<param name="l" type="xsd:integer" style="query" default="50" /> 
+      <response>
+	<representation mediaType="application/json" element="objectList" id="searchResults"/>
+      </response>
+    </resource>  -->
+  </resources>
+  <param name="limit" type="xsd:integer" style="query" id="l" />
+  <param name="offset" type="xsd:integer" style="query" id="o" />
+</application>
