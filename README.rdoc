@@ -13,11 +13,13 @@ e.g.
 * /project/141 -> project/141/stocks = 'all stocks used in project 141'
 * /stock/2653/ -> /stock/2653/experiments = 'all experiments using stock 2653'
 
-a natural hierarchy exists in the DB: project >> stock >> experiment
+a natural hierarchy exists in the DB: 
+* project >> stock >> experiment
 So retrieving a stock will retrieve all of that stocks experiments in a single
 JSON object, and retrieving a project will retrieve all of it's stocks. To
 collect only the base information about that object use the /head
-function. i.e.: /project/141/head
+function. i.e.: 
+* /project/141/head
 
 as some population genomics projects are extremely large, we strongly suggest
 that developers take into consideration response times when requesting large
