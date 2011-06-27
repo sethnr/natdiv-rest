@@ -9,8 +9,9 @@ projects consists of many experiments; experiments use one or more stocks;
 stocks can be used in one or more experiments.
 once an object is found; by adding the secondary object to the url it's
 relations can be found:
-e.g. /project/141 -> project/141/stocks = 'all stocks used in project 141'
-/stock/2653/ -> /stock/2653/experiments = 'all experiments using stock 2653'
+e.g. 
+* /project/141 -> project/141/stocks = 'all stocks used in project 141'
+* /stock/2653/ -> /stock/2653/experiments = 'all experiments using stock 2653'
 
 a natural hierarchy exists in the DB: project >> stock >> experiment
 So retrieving a stock will retrieve all of that stocks experiments in a single
