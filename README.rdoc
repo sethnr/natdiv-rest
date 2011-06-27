@@ -1,18 +1,35 @@
 = Overview
 
+This application is designed to serve JSON data in a RESTful manner for the
+GMOD natural diversity module
+[http://gmod.org/wiki/Chado_Natural_Diversity_Module] The three core objects
+in the database are: Projects, Experiments, Stocks. As might be expected, a
+projects consists of many experiments; experiments use one or more stocks;
+stocks can be used in one or more experiments.
+once an object is found; by adding the secondary object to the url it's
+relations can be found:
+e.g. /project/141 -> project/141/stocks = 'all stocks used in project 141'
+/stock/2653/ -> /stock/2653/experiments = 'all experiments using stock 2653'
+
+a natural hierarchy exists in the DB: project >> stock >> experiment
+So retrieving a stock will retrieve all of that stocks experiments in a single
+JSON object, and retrieving a project will retrieve all of it's stocks. To
+collect only the base information about that object use the /head
+function. i.e.: /project/141/head
+
+as some population genomics projects are extremely large, we strongly suggest
+that developers take into consideration response times when requesting large
+volumes of data. 
+
 == Background
 
-This code was initially written at the GMOD Evolutionary Biology Hackathon 2010 at the National Evolutionary Synthesis Center (NESCent, National Science Foundation Grant # EF-0905606 ) in Durham, NC.  The hackathon webpage is here[https://github.com/gmodevohack/gmodnatdiv].
+This application is based on the ruby/actionrecord application server developed at the GMOD Evolutionary Biology Hackathon 2010 at the National Evolutionary Synthesis Center (NESCent, National Science Foundation Grant # EF-0905606 ) in Durham, NC.  The hackathon webpage is here[https://github.com/gmodevohack/gmodnatdiv].
 
-== Purpose
 
-The initial goal was to add the nd modules from Chado [http://gmod.org/wiki/Chado] to the ActiveRecord layer in COR[http://rubyforge.org/projects/cor/]. Those models are now present here, but without tests.
+== Implementations
 
-== Caveats
-
-The ActiveRecord models include methods that are present here but not generated via the magic_chado generator in COR[http://rubyforge.org/projects/cor/].
-
-== Other goodness
-
-A simple visualization demonstration is included, using the protovis[http://vis.stanford.edu/protovis/] library.  See the badly-non-Railsesqe code in viz_controller.rb.   
+A javascript library - itself heavily reliant on the Stanford Protovis tools
+and Google Maps API V3 - is under construction. This will build visualisations
+directly from the json stuctures which emerge from the above REST
+server. An example server will be available soon; source code is available at: [https://github.com/sethnr/phenovis] 
 
