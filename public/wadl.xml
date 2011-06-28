@@ -3,8 +3,8 @@
   <resources base="http://funcgen.vectorbase.org/popgenDev/REST/">
     <!-- projects -->
     <resource path="projects">
-      <param name="o" type="xsd:integer" style="query" default="0" />
-      <param name="l" type="xsd:integer" style="query" default="50" /> 
+      <param name="o" type="xsd:integer" style="query" default="0" /> <!-- offset -->
+      <param name="l" type="xsd:integer" style="query" default="50" /> <!-- limit -->
     </resource>
     <response>
       <representation mediaType="application/json" element="objectList" id="projectList"/>
@@ -14,7 +14,7 @@
 	<representation mediaType="application/json" element="project" id="project"/>
       </response>
       <resource path="stocks">
-	<param name="s" type="xsd:string" style="query"/>
+	<param name="o" type="xsd:string" style="query"/>
 	<param name="l" type="xsd:string" style="query"/>
 	<response>
 	  <representation mediaType="application/json" element="objectList" id="projectStocks"/>
@@ -41,7 +41,7 @@
 	<representation mediaType="application/json" element="stock" id="stock"/>
       </response>    
       <resource path="projects">
-	<param name="s" type="xsd:string" style="query"/>
+	<param name="o" type="xsd:string" style="query"/>
 	<param name="l" type="xsd:string" style="query"/>
 	<response>
 	  <representation mediaType="application/json" element="objectList" id="stockProjects"/>
@@ -69,7 +69,7 @@
       </response>
       
       <resource path="projects">
-	<param name="s" type="xsd:string" style="query"/>
+	<param name="o" type="xsd:string" style="query"/>
 	<param name="l" type="xsd:string" style="query"/>
 	<response>
 	  <representation mediaType="application/json" element="objectList" id="experimentProjects"/>
