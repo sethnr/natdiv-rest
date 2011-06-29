@@ -20,7 +20,7 @@ class Stock < ActiveRecord::Base
 #  has_and_belongs_to_many :nd_experiments, :join_table => :nd_experiment_stock
   validates_presence_of( :uniquename, :type_id)
 
-  has_and_belongs_to_many :projects, :finder_sql => 'SELECT * FROM project JOIN nd_experiment_project USING (project_id) JOIN nd_experiment_stock USING (nd_experiment_id) WHERE nd_experiment_stock.stock_id = #{self.stock_id}'
+  has_and_belongs_to_many :projects, :finder_sql => 'SELECT distinct project.* FROM project JOIN nd_experiment_project USING (project_id) JOIN nd_experiment_stock USING (nd_experiment_id) WHERE nd_experiment_stock.stock_id = #{self.stock_id}'
 
 
 #  def projects
