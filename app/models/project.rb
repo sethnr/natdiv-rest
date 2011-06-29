@@ -21,7 +21,7 @@ class Project < ActiveRecord::Base
 # named_scope :stocks 
 
   def stocks
-    return Stock.find_by_sql("select * from stock join nd_experiment_stock using (stock_id) join nd_experiment_project using (nd_experiment_id) where project_id = "+id.to_s)
+    return Stock.find_by_sql("select stock.* from stock join nd_experiment_stock using (stock_id) join nd_experiment_project using (nd_experiment_id) where project_id = "+id.to_s)
   end
 
   def stock_count
