@@ -17,6 +17,7 @@ class NatdivController < ApplicationController
     params[:o] = params[:o].to_i
 #    params[:e] = (params[:o].to_i+params[:l].to_i)
     params[:format] ||= 'json'
+    params[:return] ||= 'null'
     params
   end
 

@@ -37,10 +37,17 @@ class ProjectController < NatdivController
     set_defaults(params)
      respond_to do |format|
 #       format.html # index.html.erb
-# figure out how to get subset of total & replace the inefficient select below:
-      format.json { render_json_array( @project.stocks[params[:o],params[:l]].collect{|s| s.as_json_min()},
-                                       @project.stocks.count,
-                                       params[:o]) }
+# copy following parameter to all list returns:
+      if params[:return] == full
+        format.json { render_json_array( @project.stocks[params[:o],params[:l]].collect{|s| s.as_json()},
+                                         @project.stocks.count,
+                                         params[:o]) }
+      else
+        format.json { render_json_array( @project.stocks[params[:o],params[:l]].collect{|s| s.as_json_min()},
+                                         @project.stocks.count,
+                                         params[:o]) }
+        
+      end
 #      format.json { render :json => @project.nd_experiments.collect{|e| e.stocks}.flatten.uniq.collect{|s| s.as_json} }
       format.xml  { render :xml => @project.nd_experiments.collect{|e| e.stocks}.flatten.uniq }
      end
