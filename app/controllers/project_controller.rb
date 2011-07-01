@@ -38,7 +38,7 @@ class ProjectController < NatdivController
      respond_to do |format|
 #       format.html # index.html.erb
 # copy following parameter to all list returns:
-      if params[:return] == full
+      if params[:return] == 'full'
         format.json { render_json_array( @project.stocks[params[:o],params[:l]].collect{|s| s.as_json()},
                                          @project.stocks.count,
                                          params[:o]) }
